@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 const benefits = [
   'No sign-up required',
   'Free professional templates',
-  'Instant PDF download',
-  'Mobile-friendly design',
+  'PDF & Word download',
+  'Save & edit anytime',
 ]
 
 export function HeroSection() {
