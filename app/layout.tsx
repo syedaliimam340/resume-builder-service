@@ -14,12 +14,12 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'Kangaroo Developers | Free Resume Builder - No Sign Up Required',
-  description: 'Create professional resumes in minutes with Kangaroo Developers. Browse beautiful templates, customize your content, and download in PDF or Word format without signing up.',
-  keywords: ['resume builder', 'CV maker', 'professional resume', 'free resume', 'no sign up', 'download resume', 'Kangaroo Developers'],
-  authors: [{ name: 'Kangaroo Developers' }],
+  title: 'ResumeForge | Free Resume Builder - No Sign Up Required',
+  description: 'Create professional resumes in minutes with our free resume builder. Browse beautiful templates, preview instantly, and download your resume without signing up.',
+  keywords: ['resume builder', 'CV maker', 'professional resume', 'free resume', 'no sign up', 'download resume'],
+  authors: [{ name: 'Syed Ali Imam' }],
   openGraph: {
-    title: 'Kangaroo Developers | Free Resume Builder',
+    title: 'ResumeForge | Free Resume Builder',
     description: 'Create professional resumes in minutes. No sign up required.',
     type: 'website',
   },

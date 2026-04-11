@@ -42,10 +42,10 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <a href="#hero" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-lg">
-              🦘
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-foreground">Kangaroo Developers</span>
+            <span className="font-semibold text-foreground">ResumeForge</span>
           </a>
 
           {/* Desktop nav */}
