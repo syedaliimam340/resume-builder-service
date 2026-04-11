@@ -95,7 +95,7 @@ export function AboutSection() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Team</p>
-                    <p className="font-medium text-foreground">Development Team</p>
+                    <p className="font-medium text-foreground">Rising stars</p>
                   </div>
                 </div>
 
