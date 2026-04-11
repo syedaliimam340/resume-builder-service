@@ -1,0 +1,129 @@
+// Prisma Schema for Resume Builder
+// This schema is ready for deployment with any PostgreSQL-compatible database
+// (Neon, Supabase, PlanetScale, etc.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String?
+  avatarUrl     String?   @map("avatar_url")
+  tier          Tier      @default(FREE)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  resumes       Resume[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ============================================
+// RESUME & TEMPLATES
+// ============================================
+
+model Resume {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  templateId     String   @map("template_id")
+  title          String   @default("Untitled Resume")
+  content        Json     // Structured resume data (see ResumeContent type)
+  customizations Json     // Font, colors, spacing settings
+  isPublic       Boolean  @default(false) @map("is_public")
+  shareToken     String?  @unique @map("share_token")
+  version        Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template       Template        @relation(fields: [templateId], references: [id])
+  versions       ResumeVersion[]
+
+  @@index([userId])
+  @@index([shareToken])
+  @@map("resumes")
+}
+
+model ResumeVersion {
+  id        String   @id @default(cuid())
+  resumeId  String   @map("resume_id")
+  content   Json
+  version   Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  resume    Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@map("resume_versions")
+}
+
+model Template {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  thumbnailUrl  String   @map("thumbnail_url")
+  category      Category
+  tierRequired  Tier     @default(FREE) @map("tier_required")
+  layoutSchema  Json     @map("layout_schema")
+  defaultStyles Json     @map("default_styles")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  resumes       Resume[]
+
+  @@map("templates")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Tier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum Category {
+  MODERN
+  CLASSIC
+  CREATIVE
+  MINIMAL
+  PROFESSIONAL
+}
