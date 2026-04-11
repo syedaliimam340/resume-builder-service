@@ -1,8 +1,9 @@
+'use client'
+
 import { Navigation } from '@/components/landing/navigation'
 import { HeroSection } from '@/components/landing/hero-section'
-import { FeaturesSection } from '@/components/landing/features-section'
-import { BuilderSection } from '@/components/builder/builder-section'
-import { ExportSection } from '@/components/export/export-section'
+import { TemplateGallery } from '@/components/templates/template-gallery'
+import { AboutSection } from '@/components/landing/about-section'
 import { Footer } from '@/components/landing/footer'
 
 export default function Home() {
@@ -11,17 +12,14 @@ export default function Home() {
       {/* Navigation */}
       <Navigation />
 
-      {/* Scroll 1: Landing / Hero */}
+      {/* Hero Section */}
       <HeroSection />
 
-      {/* Features */}
-      <FeaturesSection />
+      {/* Template Gallery & Builder */}
+      <TemplateGallery />
 
-      {/* Scroll 2: Resume Builder */}
-      <BuilderSection />
-
-      {/* Scroll 3: Preview & Export */}
-      <ExportSection />
+      {/* About / Contact Section */}
+      <AboutSection />
 
       {/* Footer */}
       <Footer />

@@ -14,13 +14,13 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'ResumeForge | Professional Resume Builder',
-  description: 'Create stunning, ATS-optimized resumes in minutes. 50+ professional templates, AI-powered suggestions, and instant PDF export.',
-  keywords: ['resume builder', 'CV maker', 'professional resume', 'ATS resume', 'job application'],
-  authors: [{ name: 'ResumeForge' }],
+  title: 'ResumeForge | Free Resume Builder - No Sign Up Required',
+  description: 'Create professional resumes in minutes with our free resume builder. Browse beautiful templates, preview instantly, and download your resume without signing up.',
+  keywords: ['resume builder', 'CV maker', 'professional resume', 'free resume', 'no sign up', 'download resume'],
+  authors: [{ name: 'Syed Ali Imam' }],
   openGraph: {
-    title: 'ResumeForge | Professional Resume Builder',
-    description: 'Create stunning, ATS-optimized resumes in minutes.',
+    title: 'ResumeForge | Free Resume Builder',
+    description: 'Create professional resumes in minutes. No sign up required.',
     type: 'website',
   },
   icons: {

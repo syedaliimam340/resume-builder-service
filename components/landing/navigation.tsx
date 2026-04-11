@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { label: 'Features', href: '#features' },
-  { label: 'Templates', href: '#builder' },
-  { label: 'Pricing', href: '#pricing' },
+  { label: 'Templates', href: '#templates' },
+  { label: 'About', href: '#about' },
+  { label: 'Contact', href: '#about' },
 ]
 
 export function Navigation() {
@@ -52,7 +52,7 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <button
-                key={item.href}
+                key={item.label}
                 onClick={() => scrollTo(item.href)}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -63,11 +63,8 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm" onClick={() => scrollTo('#builder')}>
-              Get Started
+            <Button size="sm" onClick={() => scrollTo('#templates')}>
+              Browse Templates
             </Button>
           </div>
 
@@ -91,7 +88,7 @@ export function Navigation() {
             <div className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <button
-                  key={item.href}
+                  key={item.label}
                   onClick={() => scrollTo(item.href)}
                   className="py-2 text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
@@ -99,11 +96,8 @@ export function Navigation() {
                 </button>
               ))}
               <hr className="border-border my-2" />
-              <Button variant="ghost" size="sm" className="justify-start">
-                Sign In
-              </Button>
-              <Button size="sm" onClick={() => scrollTo('#builder')}>
-                Get Started
+              <Button size="sm" onClick={() => scrollTo('#templates')}>
+                Browse Templates
               </Button>
             </div>
           </div>

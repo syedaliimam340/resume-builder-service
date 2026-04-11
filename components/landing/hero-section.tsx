@@ -1,11 +1,18 @@
 'use client'
 
-import { ArrowRight, FileText, Sparkles, Zap } from 'lucide-react'
+import { ArrowRight, FileText, Download, Palette, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+const benefits = [
+  'No sign-up required',
+  'Free professional templates',
+  'Instant PDF download',
+  'Mobile-friendly design',
+]
+
 export function HeroSection() {
-  const scrollToBuilder = () => {
-    document.getElementById('builder')?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToTemplates = () => {
+    document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
@@ -32,52 +39,50 @@ export function HeroSection() {
           <div className="flex-1 text-center lg:text-left">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/50 backdrop-blur-sm mb-6">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">AI-Powered Resume Builder</span>
+              <Download className="h-4 w-4 text-primary" />
+              <span className="text-sm text-muted-foreground">Free Resume Templates</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-balance leading-tight mb-6">
-              Build a resume that
-              <span className="text-primary"> lands interviews</span>
+              Create your perfect
+              <span className="text-primary"> resume in minutes</span>
             </h1>
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
-              Create professional, ATS-optimized resumes in minutes. Choose from 50+ templates, 
-              get AI suggestions, and download in any format.
+              Choose from beautifully designed templates, customize your content, 
+              and download your professional resume instantly. No sign-up needed.
             </p>
+
+            {/* Benefits list */}
+            <div className="grid grid-cols-2 gap-3 max-w-md mx-auto lg:mx-0 mb-8">
+              {benefits.map((benefit) => (
+                <div key={benefit} className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-sm text-muted-foreground">{benefit}</span>
+                </div>
+              ))}
+            </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button 
                 size="lg" 
-                onClick={scrollToBuilder}
+                onClick={scrollToTemplates}
                 className="text-base px-8 gap-2 group"
               >
-                Build Your Resume
+                Browse Templates
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
-                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
                 className="text-base px-8"
               >
-                See Features
+                Learn More
               </Button>
-            </div>
-
-            {/* Trust indicators */}
-            <div className="mt-10 pt-10 border-t border-border">
-              <p className="text-sm text-muted-foreground mb-4">Trusted by professionals at</p>
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 opacity-60">
-                {['Google', 'Microsoft', 'Amazon', 'Meta', 'Apple'].map((company) => (
-                  <span key={company} className="text-sm font-medium text-foreground/70">
-                    {company}
-                  </span>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -97,7 +102,7 @@ export function HeroSection() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">John Doe</h3>
-                    <p className="text-sm text-primary">Senior Software Engineer</p>
+                    <p className="text-sm text-primary">Software Engineer</p>
                     <p className="text-xs text-muted-foreground mt-1">San Francisco, CA</p>
                   </div>
                 </div>
@@ -124,11 +129,11 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                {/* Floating stats */}
+                {/* Floating elements */}
                 <div className="absolute -right-4 top-1/4 bg-card border border-border rounded-lg p-3 shadow-lg">
                   <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-medium text-foreground">ATS Score: 95%</span>
+                    <Palette className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium text-foreground">6 Templates</span>
                   </div>
                 </div>
 
