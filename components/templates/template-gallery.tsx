@@ -513,8 +513,8 @@ export function TemplateGallery() {
                   </div>
                 </div>
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                {/* Hover overlay - desktop only */}
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center gap-3">
                   <Button 
                     size="sm"
                     onClick={() => createNewResume(template)}
@@ -524,6 +524,18 @@ export function TemplateGallery() {
                     Create Resume
                   </Button>
                 </div>
+              </div>
+
+              {/* Create Resume button - mobile only */}
+              <div className="md:hidden px-4 pt-3 pb-1">
+                <Button
+                  size="sm"
+                  onClick={() => createNewResume(template)}
+                  className="w-full gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Resume
+                </Button>
               </div>
 
               {/* Template Info */}
