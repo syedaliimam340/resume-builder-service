@@ -16,8 +16,6 @@ First, run the development server:
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
 ```
 
 Open https://resume-builder-service.vercel.app/ with your browser to see the result.
