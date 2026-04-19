@@ -306,10 +306,10 @@ export function TemplateGallery() {
   const generateResumeHTML = (resume: ResumeData, template: Template) => {
     const isATS = template.category === 'ATS'
     const accentTint = mixWithWhite(template.colors.accent, 0.15)
-    const printAdjust = 'print-color-adjust: exact; -webkit-print-color-adjust: exact; color-adjust: exact;'
-    const baseFontFamily = "'Segoe UI', system-ui, sans-serif"
+    const printAdjust = 'print-color-adjust: exact; -webkit-print-color-adjust: exact;'
+    const styledFontFamily = "'Segoe UI', system-ui, sans-serif"
 
-    const bodyStyle = `font-family: ${baseFontFamily}; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; ${printAdjust}`
+    const bodyStyle = `font-family: ${styledFontFamily}; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; ${printAdjust}`
     const headerStyle = `margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent};`
     const nameStyle = `font-size: 28px; font-weight: 700; margin-bottom: 4px; color: ${template.colors.primary};`
     const titleStyle = `font-size: 16px; font-weight: 600; color: ${template.colors.accent}; margin-bottom: 8px;`
