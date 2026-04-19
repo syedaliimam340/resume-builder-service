@@ -20,7 +20,9 @@ interface Template {
     primary: string
     accent: string
     background: string
+    sidebar?: string
   }
+  layout: 'standard' | 'sidebar' | 'compact' | 'bold' | 'minimal' | 'tech'
 }
 
 interface Experience {
@@ -60,6 +62,7 @@ const templates: Template[] = [
     category: 'Modern',
     description: 'Clean and contemporary design perfect for tech and corporate roles',
     colors: { primary: '#1e293b', accent: '#3b82f6', background: '#ffffff' },
+    layout: 'standard',
   },
   {
     id: 'classic-elegant',
@@ -67,6 +70,7 @@ const templates: Template[] = [
     category: 'Classic',
     description: 'Timeless design with traditional formatting for conservative industries',
     colors: { primary: '#1f2937', accent: '#059669', background: '#fafafa' },
+    layout: 'compact',
   },
   {
     id: 'minimal-clean',
@@ -74,20 +78,23 @@ const templates: Template[] = [
     category: 'Minimal',
     description: 'Sleek minimalist layout that lets your content shine',
     colors: { primary: '#18181b', accent: '#71717a', background: '#ffffff' },
+    layout: 'minimal',
   },
   {
     id: 'creative-bold',
     name: 'Creative Bold',
     category: 'Creative',
     description: 'Eye-catching design for creative professionals',
-    colors: { primary: '#7c3aed', accent: '#ec4899', background: '#faf5ff' },
+    colors: { primary: '#ffffff', accent: '#ec4899', background: '#7c3aed', sidebar: '#6d28d9' },
+    layout: 'bold',
   },
   {
     id: 'executive-premium',
-    name: 'Executive Premium',
+    name: 'Executive Pro',
     category: 'Executive',
     description: 'Sophisticated design for senior leadership positions',
-    colors: { primary: '#0f172a', accent: '#ca8a04', background: '#fffbeb' },
+    colors: { primary: '#0f172a', accent: '#ca8a04', background: '#fffbeb', sidebar: '#0f172a' },
+    layout: 'sidebar',
   },
   {
     id: 'tech-developer',
@@ -95,6 +102,7 @@ const templates: Template[] = [
     category: 'Tech',
     description: 'Optimized for software developers with skills matrix',
     colors: { primary: '#0d9488', accent: '#06b6d4', background: '#f0fdfa' },
+    layout: 'tech',
   },
 ]
 
@@ -111,6 +119,183 @@ const defaultResumeData: Omit<ResumeData, 'id' | 'createdAt' | 'updatedAt'> = {
 }
 
 const STORAGE_KEY = 'kangaroo-developers-resumes'
+
+// Template thumbnail component - visually distinct previews per layout style
+function TemplateThumbnail({ template }: { template: Template }) {
+  const { colors, layout } = template
+
+  if (layout === 'sidebar') {
+    return (
+      <div className="h-full flex">
+        {/* Dark sidebar */}
+        <div className="w-1/3 p-2 flex flex-col gap-1" style={{ backgroundColor: colors.sidebar || colors.primary }}>
+          <div className="w-8 h-8 rounded-full mx-auto mb-1" style={{ backgroundColor: colors.accent, opacity: 0.8 }} />
+          <div className="h-1.5 w-10 rounded mx-auto" style={{ backgroundColor: colors.accent, opacity: 0.7 }} />
+          <div className="h-px w-full mt-2 mb-1" style={{ backgroundColor: colors.accent, opacity: 0.3 }} />
+          {['Contact', 'Skills', 'Links'].map(s => (
+            <div key={s} className="space-y-0.5">
+              <div className="h-1 w-8 rounded" style={{ backgroundColor: colors.accent, opacity: 0.6 }} />
+              <div className="h-1 w-full rounded" style={{ backgroundColor: '#ffffff', opacity: 0.3 }} />
+            </div>
+          ))}
+        </div>
+        {/* Main content */}
+        <div className="flex-1 p-2 space-y-2" style={{ backgroundColor: colors.background }}>
+          <div className="h-2 w-20 rounded" style={{ backgroundColor: colors.primary }} />
+          <div className="h-1.5 w-14 rounded" style={{ backgroundColor: colors.accent, opacity: 0.7 }} />
+          <div className="h-px w-full" style={{ backgroundColor: colors.accent, opacity: 0.4 }} />
+          {[1, 2, 3].map(i => (
+            <div key={i} className="space-y-0.5">
+              <div className="h-1.5 w-full rounded bg-gray-200" />
+              <div className={`h-1.5 rounded bg-gray-200 ${i % 2 === 0 ? 'w-4/5' : 'w-3/4'}`} />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (layout === 'bold') {
+    return (
+      <div className="h-full flex flex-col" style={{ backgroundColor: colors.background }}>
+        {/* Bold header block */}
+        <div className="p-3" style={{ backgroundColor: colors.background }}>
+          <div className="h-3 w-24 rounded mb-1" style={{ backgroundColor: colors.primary }} />
+          <div className="h-2 w-16 rounded" style={{ backgroundColor: colors.accent }} />
+        </div>
+        {/* Body with left accent bar */}
+        <div className="flex-1 flex gap-0">
+          <div className="w-1" style={{ backgroundColor: colors.accent }} />
+          <div className="flex-1 p-2 space-y-2">
+            <div className="h-1.5 w-10 rounded" style={{ backgroundColor: colors.accent, opacity: 0.8 }} />
+            <div className="space-y-0.5">
+              <div className="h-1.5 w-full rounded bg-gray-200 opacity-70" />
+              <div className="h-1.5 w-4/5 rounded bg-gray-200 opacity-70" />
+            </div>
+            <div className="h-1.5 w-10 rounded" style={{ backgroundColor: colors.accent, opacity: 0.8 }} />
+            <div className="space-y-0.5">
+              <div className="h-1.5 w-full rounded bg-gray-200 opacity-70" />
+              <div className="h-1.5 w-3/5 rounded bg-gray-200 opacity-70" />
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-3 w-8 rounded text-white" style={{ backgroundColor: colors.accent, opacity: 0.8 }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (layout === 'minimal') {
+    return (
+      <div className="h-full p-4 flex flex-col gap-2" style={{ backgroundColor: colors.background }}>
+        <div className="h-3 w-20 rounded" style={{ backgroundColor: colors.primary }} />
+        <div className="h-1.5 w-12 rounded" style={{ backgroundColor: colors.accent, opacity: 0.5 }} />
+        <div className="flex-1 space-y-3 mt-2">
+          {[1, 2, 3].map(i => (
+            <div key={i}>
+              <div className="h-1 w-16 rounded mb-1" style={{ backgroundColor: colors.accent, opacity: 0.4 }} />
+              <div className="space-y-0.5">
+                <div className="h-1.5 w-full rounded bg-gray-100" />
+                <div className="h-1.5 w-4/5 rounded bg-gray-100" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (layout === 'tech') {
+    return (
+      <div className="h-full p-2 flex flex-col gap-1.5" style={{ backgroundColor: colors.background }}>
+        {/* Header with accent border */}
+        <div className="border-b-2 pb-1.5" style={{ borderColor: colors.accent }}>
+          <div className="h-2.5 w-20 rounded mb-1" style={{ backgroundColor: colors.primary }} />
+          <div className="flex gap-1">
+            {[1, 2].map(i => (
+              <div key={i} className="h-1.5 w-12 rounded" style={{ backgroundColor: colors.accent, opacity: 0.5 }} />
+            ))}
+          </div>
+        </div>
+        {/* Skills grid */}
+        <div className="flex flex-wrap gap-0.5">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="h-3 w-8 rounded border text-[5px] flex items-center justify-center" style={{ borderColor: colors.accent, color: colors.accent }}>skill</div>
+          ))}
+        </div>
+        <div className="space-y-1">
+          {[1, 2].map(i => (
+            <div key={i} className="space-y-0.5">
+              <div className="h-1.5 w-16 rounded" style={{ backgroundColor: colors.primary, opacity: 0.6 }} />
+              <div className="h-1 w-full rounded bg-gray-200" />
+              <div className="h-1 w-3/4 rounded bg-gray-200" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (layout === 'compact') {
+    return (
+      <div className="h-full p-3 flex flex-col gap-1.5" style={{ backgroundColor: colors.background }}>
+        {/* Classic centered header */}
+        <div className="text-center pb-1.5 border-b" style={{ borderColor: colors.accent }}>
+          <div className="h-2.5 w-20 rounded mx-auto mb-1" style={{ backgroundColor: colors.primary }} />
+          <div className="h-1.5 w-14 rounded mx-auto" style={{ backgroundColor: colors.accent, opacity: 0.6 }} />
+        </div>
+        <div className="space-y-2 flex-1">
+          {[1, 2, 3].map(i => (
+            <div key={i}>
+              <div className="h-1 w-12 rounded mb-1" style={{ backgroundColor: colors.accent, opacity: 0.6 }} />
+              <div className="space-y-0.5">
+                <div className="h-1.5 w-full rounded bg-gray-200" />
+                <div className="h-1.5 w-5/6 rounded bg-gray-200" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Standard / default layout
+  return (
+    <div className="h-full p-3 flex flex-col gap-2" style={{ backgroundColor: colors.background }}>
+      {/* Header */}
+      <div className="pb-2 border-b-2" style={{ borderColor: colors.accent }}>
+        <div className="h-3 w-24 rounded mb-1" style={{ backgroundColor: colors.primary }} />
+        <div className="h-2 w-16 rounded" style={{ backgroundColor: colors.accent, opacity: 0.7 }} />
+        <div className="flex gap-1 mt-1">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-1 w-10 rounded bg-gray-300" />
+          ))}
+        </div>
+      </div>
+      {/* Sections */}
+      <div className="space-y-2 flex-1">
+        {[1, 2, 3].map(i => (
+          <div key={i}>
+            <div className="h-1.5 w-14 rounded mb-1" style={{ backgroundColor: colors.accent, opacity: 0.6 }} />
+            <div className="space-y-0.5">
+              <div className="h-1.5 w-full rounded bg-gray-200" />
+              <div className={`h-1.5 rounded bg-gray-200 ${i % 2 === 0 ? 'w-4/5' : 'w-3/4'}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Skills */}
+      <div className="flex gap-1 flex-wrap">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-3 w-8 rounded" style={{ backgroundColor: `${colors.accent}30`, border: `1px solid ${colors.accent}60` }} />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function TemplateGallery() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
@@ -273,89 +458,110 @@ export function TemplateGallery() {
     updateResumeField('skills', currentResume.skills.filter(s => s !== skill))
   }
 
+  // ATS-friendly semantic HTML resume generator
   const generateResumeHTML = (resume: ResumeData, template: Template) => {
+    const contactParts = [resume.email, resume.phone, resume.location].filter(Boolean)
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${resume.name || 'Resume'} - Resume</title>
+  <title>${resume.name || 'Resume'}</title>
   <style>
+    /* ATS-friendly: minimal styling, semantic structure */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Segoe UI', system-ui, sans-serif; 
-      background: ${template.colors.background}; 
-      color: ${template.colors.primary};
-      line-height: 1.6;
-      padding: 40px;
-      max-width: 800px;
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: #ffffff;
+      padding: 0.75in 0.75in;
+      max-width: 8.5in;
       margin: 0 auto;
     }
-    .header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent}; }
-    .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .title { font-size: 16px; color: ${template.colors.accent}; margin-bottom: 8px; }
-    .contact { font-size: 12px; color: #666; }
-    .section { margin-bottom: 20px; }
-    .section-title { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: ${template.colors.accent}; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
-    .summary { font-size: 14px; color: #4b5563; }
-    .job { margin-bottom: 16px; }
-    .job-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .job-title { font-weight: 600; }
-    .job-period { font-size: 12px; color: #666; }
-    .job-company { font-size: 14px; color: ${template.colors.accent}; }
-    .bullets { list-style: disc; padding-left: 20px; font-size: 13px; }
-    .edu-item { margin-bottom: 8px; }
-    .edu-degree { font-weight: 600; }
-    .edu-school { font-size: 13px; color: #666; }
-    .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .skill { background: ${template.colors.accent}15; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
-    @media print { body { padding: 20px; } }
+    header { margin-bottom: 18pt; border-bottom: 2pt solid ${template.colors.accent}; padding-bottom: 12pt; }
+    h1 { font-size: 22pt; font-weight: 700; color: ${template.colors.primary}; margin-bottom: 3pt; }
+    .job-title-header { font-size: 12pt; color: ${template.colors.accent}; margin-bottom: 6pt; }
+    .contact-info { font-size: 10pt; color: #555555; }
+    .contact-info span + span::before { content: ' | '; }
+    section { margin-bottom: 16pt; }
+    h2 {
+      font-size: 12pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5pt;
+      color: ${template.colors.accent};
+      border-bottom: 1pt solid #e0e0e0;
+      padding-bottom: 3pt;
+      margin-bottom: 10pt;
+    }
+    p { font-size: 10.5pt; color: #333333; margin-bottom: 6pt; }
+    article { margin-bottom: 12pt; }
+    .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2pt; }
+    h3 { font-size: 11pt; font-weight: 600; color: ${template.colors.primary}; }
+    .entry-sub { font-size: 10pt; color: ${template.colors.accent}; margin-bottom: 4pt; }
+    .entry-date { font-size: 10pt; color: #666666; white-space: nowrap; }
+    ul { list-style-type: disc; padding-left: 18pt; margin-top: 4pt; }
+    li { font-size: 10.5pt; color: #333333; margin-bottom: 2pt; }
+    .skills-list { display: flex; flex-wrap: wrap; gap: 6pt; }
+    .skill-tag { font-size: 10pt; padding: 2pt 8pt; border: 1pt solid ${template.colors.accent}; color: ${template.colors.primary}; border-radius: 2pt; }
+    @media print {
+      body { padding: 0.5in; }
+      section { page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="name">${resume.name || 'Your Name'}</div>
-    <div class="title">${resume.title || 'Professional Title'}</div>
-    <div class="contact">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
-  </div>
-  
-  ${resume.summary ? `<div class="section">
-    <div class="section-title">Professional Summary</div>
-    <p class="summary">${resume.summary}</p>
-  </div>` : ''}
-  
-  ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<div class="section">
-    <div class="section-title">Experience</div>
+  <header>
+    <h1>${resume.name || 'Your Name'}</h1>
+    ${resume.title ? `<p class="job-title-header">${resume.title}</p>` : ''}
+    ${contactParts.length > 0 ? `<p class="contact-info">${contactParts.map(p => `<span>${p}</span>`).join('')}</p>` : ''}
+  </header>
+
+  ${resume.summary ? `
+  <section aria-label="Professional Summary">
+    <h2>Professional Summary</h2>
+    <p>${resume.summary}</p>
+  </section>` : ''}
+
+  ${resume.experience.some(e => e.company || e.title) ? `
+  <section aria-label="Work Experience">
+    <h2>Work Experience</h2>
     ${resume.experience.filter(job => job.company || job.title).map(job => `
-      <div class="job">
-        <div class="job-header">
-          <span class="job-title">${job.title || 'Job Title'}</span>
-          <span class="job-period">${job.period || ''}</span>
-        </div>
-        <div class="job-company">${job.company || 'Company'}</div>
-        ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul class="bullets">
-          ${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}
-        </ul>` : ''}
+    <article>
+      <div class="entry-header">
+        <h3>${job.title || 'Position'}</h3>
+        ${job.period ? `<span class="entry-date">${job.period}</span>` : ''}
       </div>
-    `).join('')}
-  </div>` : ''}
-  
-  ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<div class="section">
-    <div class="section-title">Education</div>
+      ${job.company ? `<p class="entry-sub">${job.company}</p>` : ''}
+      ${job.bullets.filter(b => b.trim()).length > 0 ? `
+      <ul>
+        ${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('\n        ')}
+      </ul>` : ''}
+    </article>`).join('')}
+  </section>` : ''}
+
+  ${resume.education.some(e => e.school || e.degree) ? `
+  <section aria-label="Education">
+    <h2>Education</h2>
     ${resume.education.filter(edu => edu.school || edu.degree).map(edu => `
-      <div class="edu-item">
-        <div class="edu-degree">${edu.degree || 'Degree'}</div>
-        <div class="edu-school">${edu.school || 'School'}${edu.year ? `, ${edu.year}` : ''}</div>
+    <article>
+      <div class="entry-header">
+        <h3>${edu.degree || 'Degree'}</h3>
+        ${edu.year ? `<span class="entry-date">${edu.year}</span>` : ''}
       </div>
-    `).join('')}
-  </div>` : ''}
-  
-  ${resume.skills.length > 0 ? `<div class="section">
-    <div class="section-title">Skills</div>
-    <div class="skills">
-      ${resume.skills.map(skill => `<span class="skill">${skill}</span>`).join('')}
+      ${edu.school ? `<p class="entry-sub">${edu.school}</p>` : ''}
+    </article>`).join('')}
+  </section>` : ''}
+
+  ${resume.skills.length > 0 ? `
+  <section aria-label="Skills">
+    <h2>Skills</h2>
+    <div class="skills-list">
+      ${resume.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('\n      ')}
     </div>
-  </div>` : ''}
+  </section>` : ''}
 </body>
 </html>`
   }
@@ -466,59 +672,25 @@ export function TemplateGallery() {
         )}
 
         {/* Template Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
             <div
               key={template.id}
-              className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
+              className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col"
             >
-              {/* Template Preview */}
-              <div 
-                className="aspect-[3/4] relative p-4"
+              {/* Template Visual Preview */}
+              <div
+                className="aspect-[3/4] relative overflow-hidden"
                 style={{ backgroundColor: template.colors.background }}
               >
-                {/* Mini resume preview */}
-                <div className="h-full rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-                  <div 
-                    className="h-3 w-24 rounded mb-1"
-                    style={{ backgroundColor: template.colors.primary }}
-                  />
-                  <div 
-                    className="h-2 w-16 rounded mb-3"
-                    style={{ backgroundColor: template.colors.accent, opacity: 0.7 }}
-                  />
-                  <div className="space-y-2 mb-3">
-                    <div className="h-1.5 w-full rounded bg-gray-200" />
-                    <div className="h-1.5 w-4/5 rounded bg-gray-200" />
-                    <div className="h-1.5 w-3/5 rounded bg-gray-200" />
-                  </div>
-                  <div 
-                    className="h-2 w-12 rounded mb-2"
-                    style={{ backgroundColor: template.colors.accent, opacity: 0.5 }}
-                  />
-                  <div className="space-y-2 mb-3">
-                    <div className="h-1.5 w-full rounded bg-gray-200" />
-                    <div className="h-1.5 w-5/6 rounded bg-gray-200" />
-                  </div>
-                  <div className="flex gap-1 mt-auto">
-                    {[1, 2, 3].map((i) => (
-                      <div 
-                        key={i}
-                        className="h-4 w-10 rounded text-[6px] flex items-center justify-center text-white"
-                        style={{ backgroundColor: template.colors.accent }}
-                      >
-                        Skill
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <TemplateThumbnail template={template} />
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                  <Button 
+                {/* Desktop hover overlay */}
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center">
+                  <Button
                     size="sm"
                     onClick={() => createNewResume(template)}
-                    className="gap-2"
+                    className="gap-2 shadow-lg"
                   >
                     <Plus className="h-4 w-4" />
                     Create Resume
@@ -527,14 +699,23 @@ export function TemplateGallery() {
               </div>
 
               {/* Template Info */}
-              <div className="p-4 border-t border-border">
-                <div className="flex items-center justify-between mb-2">
+              <div className="p-4 border-t border-border flex flex-col gap-3 flex-1">
+                <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground">{template.name}</h3>
-                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary shrink-0">
                     {template.category}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{template.description}</p>
+                <p className="text-sm text-muted-foreground flex-1">{template.description}</p>
+                {/* Always-visible button on mobile */}
+                <Button
+                  size="sm"
+                  onClick={() => createNewResume(template)}
+                  className="w-full gap-2 sm:hidden"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Resume
+                </Button>
               </div>
             </div>
           ))}
@@ -567,63 +748,68 @@ export function TemplateGallery() {
       {/* Editor Modal */}
       {isEditorOpen && currentResume && selectedTemplate && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-auto">
-          <div className="min-h-screen py-8 px-4">
+          <div className="min-h-screen py-4 sm:py-8 px-3 sm:px-4">
             <div className="max-w-5xl mx-auto">
               {/* Editor Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <Button 
-                    variant="ghost" 
+              <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => setIsEditorOpen(false)}
+                    className="shrink-0"
                   >
                     <X className="h-5 w-5" />
                   </Button>
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h2 className="text-base sm:text-xl font-semibold text-foreground truncate">
                       {currentResume.name || 'New Resume'}
                     </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Template: {selectedTemplate.name}
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {selectedTemplate.name}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button 
-                    variant="outline" 
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outline"
                     onClick={saveResume}
-                    className="gap-2"
+                    className="gap-1 sm:gap-2 px-2 sm:px-4"
+                    size="sm"
                   >
                     <Save className="h-4 w-4" />
-                    Save
+                    <span className="hidden sm:inline">Save</span>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setIsPreviewOpen(true)}
-                    className="gap-2"
+                    className="gap-1 sm:gap-2 px-2 sm:px-4"
+                    size="sm"
                   >
                     <Eye className="h-4 w-4" />
-                    Preview
+                    <span className="hidden sm:inline">Preview</span>
                   </Button>
                 </div>
               </div>
 
-              {/* Step Navigation */}
-              <div className="flex items-center justify-center gap-2 mb-8">
-                {editorSteps.map((step, idx) => (
-                  <button
-                    key={step}
-                    onClick={() => setEditorStep(idx)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                      editorStep === idx 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-card text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {step}
-                  </button>
-                ))}
+              {/* Step Navigation - scrollable on mobile */}
+              <div className="overflow-x-auto mb-6 -mx-3 sm:mx-0 px-3 sm:px-0">
+                <div className="flex items-center gap-1 sm:gap-2 sm:justify-center min-w-max sm:min-w-0 pb-1">
+                  {editorSteps.map((step, idx) => (
+                    <button
+                      key={step}
+                      onClick={() => setEditorStep(idx)}
+                      className={cn(
+                        "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                        editorStep === idx
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {idx + 1}. {step}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Editor Content */}
