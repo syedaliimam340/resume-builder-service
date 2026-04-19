@@ -618,7 +618,7 @@ export function TemplateGallery() {
                 <Button
                   size="sm"
                   onClick={() => createNewResume(template)}
-                  className="w-full gap-2"
+                  className="w-full gap-2 md:hidden"
                 >
                   <Plus className="h-4 w-4" />
                   Create Resume
