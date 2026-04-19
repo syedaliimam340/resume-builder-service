@@ -289,8 +289,23 @@ export function TemplateGallery() {
     updateResumeField('skills', currentResume.skills.filter(s => s !== skill))
   }
 
+  const mixWithWhite = (hex: string, weight: number) => {
+    const cleaned = hex.replace('#', '').trim()
+    const normalized = cleaned.length === 3
+      ? cleaned.split('').map((c) => c + c).join('')
+      : cleaned.padStart(6, '0').slice(0, 6)
+    const num = parseInt(normalized, 16)
+    const r = (num >> 16) & 0xff
+    const g = (num >> 8) & 0xff
+    const b = num & 0xff
+    const mix = (channel: number) => Math.round(channel * weight + 255 * (1 - weight))
+    const toHex = (channel: number) => mix(channel).toString(16).padStart(2, '0')
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+  }
+
   const generateResumeHTML = (resume: ResumeData, template: Template) => {
     const isATS = template.category === 'ATS'
+    const accentTint = mixWithWhite(template.colors.accent, 0.15)
 
     if (isATS) {
       // ATS-optimized output: plain structure, no decorative styles, standard fonts
@@ -323,10 +338,10 @@ export function TemplateGallery() {
     @media print { body { padding: 20px; background: #ffffff; } }
   </style>
 </head>
-<body>
-  <h1>${resume.name || 'Your Name'}</h1>
-  <div class="title">${resume.title || ''}</div>
-  <div class="contact">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
+ <body style="font-family: 'Segoe UI', system-ui, sans-serif; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto;">
+   <h1 style="color: #000000;">${resume.name || 'Your Name'}</h1>
+   <div class="title" style="color: #000000;">${resume.title || ''}</div>
+   <div class="contact" style="color: #000000;">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
 
   ${resume.summary ? `<h2>Professional Summary</h2>
   <p>${resume.summary}</p>` : ''}
@@ -362,21 +377,21 @@ export function TemplateGallery() {
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    body { 
-      font-family: 'Segoe UI', system-ui, sans-serif; 
-      background: ${template.colors.background}; 
-      color: ${template.colors.primary};
-      line-height: 1.6;
-      padding: 40px;
-      max-width: 800px;
-      margin: 0 auto;
-      print-color-adjust: exact;
-      -webkit-print-color-adjust: exact;
-    }
+     body { 
+       font-family: 'Segoe UI', system-ui, sans-serif; 
+       background: ${template.colors.background}; 
+       color: ${template.colors.primary};
+       line-height: 1.6;
+       padding: 40px;
+       max-width: 800px;
+       margin: 0 auto;
+       print-color-adjust: exact;
+       -webkit-print-color-adjust: exact;
+     }
     html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     .header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent}; }
-    .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .title { font-size: 16px; color: ${template.colors.accent}; margin-bottom: 8px; }
+     .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+     .title { font-size: 16px; color: ${template.colors.accent}; margin-bottom: 8px; }
     .contact { font-size: 12px; color: #666; }
     .section { margin-bottom: 20px; }
     .section-title { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: ${template.colors.accent}; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
@@ -395,50 +410,50 @@ export function TemplateGallery() {
     @media print { body { padding: 20px; background: ${template.colors.background}; } }
   </style>
 </head>
-<body>
-  <div class="header">
-    <div class="name">${resume.name || 'Your Name'}</div>
-    <div class="title">${resume.title || 'Professional Title'}</div>
-    <div class="contact">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
-  </div>
-  
-  ${resume.summary ? `<div class="section">
-    <div class="section-title">Professional Summary</div>
-    <p class="summary">${resume.summary}</p>
-  </div>` : ''}
-  
-  ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<div class="section">
-    <div class="section-title">Experience</div>
-    ${resume.experience.filter(job => job.company || job.title).map(job => `
-      <div class="job">
-        <div class="job-header">
-          <span class="job-title">${job.title || 'Job Title'}</span>
-          <span class="job-period">${job.period || ''}</span>
-        </div>
-        <div class="job-company">${job.company || 'Company'}</div>
-        ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul class="bullets">
-          ${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}
-        </ul>` : ''}
-      </div>
-    `).join('')}
-  </div>` : ''}
-  
-  ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<div class="section">
-    <div class="section-title">Education</div>
-    ${resume.education.filter(edu => edu.school || edu.degree).map(edu => `
-      <div class="edu-item">
-        <div class="edu-degree">${edu.degree || 'Degree'}</div>
-        <div class="edu-school">${edu.school || 'School'}${edu.year ? `, ${edu.year}` : ''}</div>
-      </div>
-    `).join('')}
-  </div>` : ''}
-  
-  ${resume.skills.length > 0 ? `<div class="section">
-    <div class="section-title">Skills</div>
-    <div class="skills">
-      ${resume.skills.map(skill => `<span class="skill">${skill}</span>`).join('')}
-    </div>
-  </div>` : ''}
+ <body style="font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px;">
+   <div class="header" style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent};">
+     <div class="name" style="color: ${template.colors.primary};">${resume.name || 'Your Name'}</div>
+     <div class="title" style="color: ${template.colors.accent};">${resume.title || 'Professional Title'}</div>
+     <div class="contact" style="color: #666;">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
+   </div>
+   
+   ${resume.summary ? `<div class="section">
+     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Professional Summary</div>
+     <p class="summary" style="color: #4b5563;">${resume.summary}</p>
+   </div>` : ''}
+   
+   ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<div class="section">
+     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Experience</div>
+     ${resume.experience.filter(job => job.company || job.title).map(job => `
+       <div class="job">
+         <div class="job-header">
+           <span class="job-title" style="color: ${template.colors.primary};">${job.title || 'Job Title'}</span>
+           <span class="job-period" style="color: #666;">${job.period || ''}</span>
+         </div>
+         <div class="job-company" style="color: ${template.colors.accent};">${job.company || 'Company'}</div>
+         ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul class="bullets">
+           ${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}
+         </ul>` : ''}
+       </div>
+     `).join('')}
+   </div>` : ''}
+   
+   ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<div class="section">
+     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Education</div>
+     ${resume.education.filter(edu => edu.school || edu.degree).map(edu => `
+       <div class="edu-item">
+         <div class="edu-degree" style="color: ${template.colors.primary};">${edu.degree || 'Degree'}</div>
+         <div class="edu-school" style="color: #666;">${edu.school || 'School'}${edu.year ? `, ${edu.year}` : ''}</div>
+       </div>
+     `).join('')}
+   </div>` : ''}
+   
+   ${resume.skills.length > 0 ? `<div class="section">
+     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Skills</div>
+     <div class="skills">
+       ${resume.skills.map(skill => `<span class="skill" style="background: ${accentTint}; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px;">${skill}</span>`).join('')}
+     </div>
+   </div>` : ''}
 </body>
 </html>`
   }
