@@ -61,7 +61,6 @@ export interface ProjectItem {
 export interface ResumeContent {
   personalInfo: PersonalInfo
   summary: string
-  jobDescription: string
   experience: ExperienceItem[]
   education: EducationItem[]
   skills: SkillCategory[]

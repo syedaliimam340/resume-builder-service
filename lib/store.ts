@@ -19,7 +19,6 @@ export const defaultResumeContent: ResumeContent = {
     photo: undefined,
   },
   summary: '',
-  jobDescription: '',
   experience: [],
   education: [],
   skills: [],
@@ -55,7 +54,6 @@ interface ResumeStore {
   setResume: (resume: ResumeContent) => void
   updatePersonalInfo: (info: Partial<ResumeContent['personalInfo']>) => void
   updateSummary: (summary: string) => void
-  updateJobDescription: (jobDescription: string) => void
   addExperience: (experience: ResumeContent['experience'][0]) => void
   updateExperience: (id: string, experience: Partial<ResumeContent['experience'][0]>) => void
   removeExperience: (id: string) => void
@@ -120,12 +118,6 @@ export const useResumeStore = create<ResumeStore>()(
       updateSummary: (summary) =>
         set((state) => ({
           resume: { ...state.resume, summary },
-          isDirty: true,
-        })),
-
-      updateJobDescription: (jobDescription) =>
-        set((state) => ({
-          resume: { ...state.resume, jobDescription },
           isDirty: true,
         })),
 

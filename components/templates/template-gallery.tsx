@@ -77,6 +77,41 @@ const templates: Template[] = [
     description: 'Sleek minimalist layout that lets your content shine',
     colors: { primary: '#18181b', accent: '#71717a', background: '#ffffff' },
   },
+  {
+    id: 'creative-bold',
+    name: 'Creative Bold',
+    category: 'Creative',
+    description: 'Eye-catching design for creative professionals',
+    colors: { primary: '#7c3aed', accent: '#ec4899', background: '#faf5ff' },
+  },
+  {
+    id: 'executive-premium',
+    name: 'Executive Premium',
+    category: 'Executive',
+    description: 'Sophisticated design for senior leadership positions',
+    colors: { primary: '#0f172a', accent: '#ca8a04', background: '#fffbeb' },
+  },
+  {
+    id: 'tech-developer',
+    name: 'Tech Developer',
+    category: 'Tech',
+    description: 'Optimized for software developers with skills matrix',
+    colors: { primary: '#0d9488', accent: '#06b6d4', background: '#f0fdfa' },
+  },
+  {
+    id: 'ats-professional',
+    name: 'ATS Optimized Professional',
+    category: 'ATS',
+    description: 'Maximum ATS compatibility with clean, simple formatting for best parsing results',
+    colors: { primary: '#1a1a1a', accent: '#2563eb', background: '#ffffff' },
+  },
+  {
+    id: 'ats-modern',
+    name: 'ATS Optimized Modern',
+    category: 'ATS',
+    description: 'Professional look with ATS optimization — ideal for corporate and tech roles',
+    colors: { primary: '#111827', accent: '#0ea5e9', background: '#f8fafc' },
+  },
 ]
 
 const defaultResumeData: Omit<ResumeData, 'id' | 'createdAt' | 'updatedAt'> = {

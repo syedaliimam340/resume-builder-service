@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useResumeStore } from '@/lib/store'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2, ArrowRight, ArrowLeft, X } from 'lucide-react'
@@ -18,56 +17,10 @@ const skillLevels = [
   { value: 5, label: 'Expert' },
 ]
 
-const STOP_WORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 'if', 'in', 'into',
-  'is', 'it', 'its', 'of', 'on', 'or', 'our', 'that', 'the', 'their', 'this', 'to', 'we', 'will',
-  'with', 'you', 'your', 'they', 'them', 'these', 'those', 'also', 'can', 'should', 'would', 'could',
-  'job', 'role', 'position', 'responsibilities', 'requirements', 'preferred', 'experience', 'skills',
-  'team', 'work', 'working', 'ability', 'including', 'using', 'use', 'new', 'strong', 'knowledge',
-])
-
-const KEYWORD_CATEGORY = 'Job Description Keywords'
-
-const formatKeyword = (keyword: string) => {
-  if (/^[a-z]\+\+$/.test(keyword) || /^[a-z]#$/i.test(keyword)) {
-    return keyword.toUpperCase()
-  }
-  if (keyword.length <= 3) {
-    return keyword.toUpperCase()
-  }
-  return keyword.charAt(0).toUpperCase() + keyword.slice(1)
-}
-
-const extractKeywords = (text: string) => {
-  const tokens = text
-    .toLowerCase()
-    .replace(/[^a-z0-9+.#/ -]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-
-  const counts = new Map<string, number>()
-  for (const token of tokens) {
-    if (token.length < 3 || STOP_WORDS.has(token) || /^\d+$/.test(token)) {
-      continue
-    }
-    counts.set(token, (counts.get(token) ?? 0) + 1)
-  }
-
-  const ranked = Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, 12)
-    .map(([keyword]) => formatKeyword(keyword))
-
-  return Array.from(new Set(ranked))
-}
-
 export function SkillsForm() {
-  const { resume, setSkills, updateJobDescription, nextStep, prevStep } = useResumeStore()
+  const { resume, setSkills, nextStep, prevStep } = useResumeStore()
   const [newCategory, setNewCategory] = useState('')
   const [newSkill, setNewSkill] = useState({ category: '', name: '', level: 3 as 1 | 2 | 3 | 4 | 5 })
-  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([])
-
-  const jobDescription = resume.jobDescription ?? ''
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !resume.skills.find(s => s.category === newCategory.trim())) {
@@ -124,134 +77,11 @@ export function SkillsForm() {
     setSkills(updatedSkills)
   }
 
-  const handleGenerateKeywords = () => {
-    const existingSkills = new Set(
-      resume.skills.flatMap((category) => category.items.map((item) => item.name.trim().toLowerCase()))
-    )
-    const extracted = extractKeywords(jobDescription)
-    const filtered = extracted.filter((keyword) => !existingSkills.has(keyword.trim().toLowerCase()))
-    setKeywordSuggestions(filtered)
-  }
-
-  const addKeywordToSkills = (keyword: string) => {
-    const normalized = keyword.trim().toLowerCase()
-    if (!normalized) return
-
-    const existingSkills = new Set(
-      resume.skills.flatMap((category) => category.items.map((item) => item.name.trim().toLowerCase()))
-    )
-    if (existingSkills.has(normalized)) {
-      setKeywordSuggestions((prev) => prev.filter((item) => item.trim().toLowerCase() !== normalized))
-      return
-    }
-
-    const updatedSkills = resume.skills.some((cat) => cat.category === KEYWORD_CATEGORY)
-      ? resume.skills.map((cat) =>
-          cat.category === KEYWORD_CATEGORY
-            ? { ...cat, items: [...cat.items, { name: keyword, level: 3 }] }
-            : cat
-        )
-      : [...resume.skills, { category: KEYWORD_CATEGORY, items: [{ name: keyword, level: 3 }] }]
-
-    setSkills(updatedSkills)
-    setKeywordSuggestions((prev) => prev.filter((item) => item.trim().toLowerCase() !== normalized))
-  }
-
-  const handleAddAllKeywords = () => {
-    if (keywordSuggestions.length === 0) return
-    const existingSkills = new Set(
-      resume.skills.flatMap((category) => category.items.map((item) => item.name.trim().toLowerCase()))
-    )
-    const keywordsToAdd = keywordSuggestions.filter(
-      (keyword) => !existingSkills.has(keyword.trim().toLowerCase())
-    )
-    if (keywordsToAdd.length === 0) {
-      setKeywordSuggestions([])
-      return
-    }
-
-    let updatedSkills: SkillCategory[]
-    if (resume.skills.some((cat) => cat.category === KEYWORD_CATEGORY)) {
-      updatedSkills = resume.skills.map((cat) =>
-        cat.category === KEYWORD_CATEGORY
-          ? {
-              ...cat,
-              items: [
-                ...cat.items,
-                ...keywordsToAdd.map((keyword) => ({ name: keyword, level: 3 as const })),
-              ],
-            }
-          : cat
-      )
-    } else {
-      updatedSkills = [
-        ...resume.skills,
-        {
-          category: KEYWORD_CATEGORY,
-          items: keywordsToAdd.map((keyword) => ({ name: keyword, level: 3 as const })),
-        },
-      ]
-    }
-
-    setSkills(updatedSkills)
-    setKeywordSuggestions([])
-  }
-
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-1">Skills</h3>
         <p className="text-sm text-muted-foreground">Add your technical and professional skills</p>
-      </div>
-
-      {/* Job description keyword helper */}
-      <div className="space-y-3 p-4 border border-dashed border-border rounded-lg">
-        <div>
-          <Label htmlFor="jobDescription">Job Description</Label>
-          <p className="text-xs text-muted-foreground">
-            Paste a job description to extract keyword suggestions locally.
-          </p>
-        </div>
-        <Textarea
-          id="jobDescription"
-          value={jobDescription}
-          onChange={(e) => updateJobDescription(e.target.value)}
-          placeholder="Paste the job description here..."
-          rows={4}
-        />
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            onClick={handleGenerateKeywords}
-            disabled={!jobDescription.trim()}
-          >
-            Extract Keywords
-          </Button>
-          {keywordSuggestions.length > 0 && (
-            <>
-              <Button variant="ghost" onClick={handleAddAllKeywords}>
-                Add All
-              </Button>
-              <Button variant="ghost" onClick={() => setKeywordSuggestions([])}>
-                Clear
-              </Button>
-            </>
-          )}
-        </div>
-
-        {keywordSuggestions.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {keywordSuggestions.map((keyword) => (
-              <button
-                key={keyword}
-                onClick={() => addKeywordToSkills(keyword)}
-                className="px-3 py-1.5 text-sm bg-card border border-border rounded-md text-foreground hover:border-primary/50 transition-colors"
-              >
-                + {keyword}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Skill categories */}
