@@ -11,15 +11,16 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean
   error: Error | null
+  resetKey: number
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { hasError: false, error: null, resetKey: 0 }
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error }
   }
 
@@ -28,7 +29,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null })
+    this.setState(prev => ({ hasError: false, error: null, resetKey: prev.resetKey + 1 }))
   }
 
   render() {
@@ -53,6 +54,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       )
     }
 
-    return this.props.children
+    return <React.Fragment key={this.state.resetKey}>{this.props.children}</React.Fragment>
   }
 }

@@ -621,7 +621,7 @@ export function TemplateGallery() {
               </div>
 
               {/* Step Navigation - scrollable on mobile */}
-              <div className="flex items-center gap-2 mb-6 md:mb-8 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex items-center gap-2 mb-6 md:mb-8 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {editorSteps.map((step, idx) => (
                   <button
                     key={step}
