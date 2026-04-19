@@ -443,6 +443,20 @@ export function TemplateGallery() {
 </html>`
   }
 
+  const addWordNamespaces = (html: string) => {
+    if (typeof DOMParser === 'undefined') return html
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const htmlEl = doc.documentElement
+    if (!htmlEl.getAttribute('xmlns:o')) {
+      htmlEl.setAttribute('xmlns:o', 'urn:schemas-microsoft-com:office:office')
+    }
+    if (!htmlEl.getAttribute('xmlns:w')) {
+      htmlEl.setAttribute('xmlns:w', 'urn:schemas-microsoft-com:office:word')
+    }
+    return `<!DOCTYPE html>${htmlEl.outerHTML}`
+  }
+
   const handleDownload = async (format: 'pdf' | 'docx') => {
     if (!currentResume || !selectedTemplate) return
     
@@ -464,12 +478,7 @@ export function TemplateGallery() {
         }
       }
     } else {
-      const wordContent = htmlContent.replace(/<html([^>]*)>/i, (match, attrs) => {
-        if (/xmlns:o=|xmlns:w=/i.test(match)) {
-          return match
-        }
-        return `<html${attrs} xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">`
-      })
+      const wordContent = addWordNamespaces(htmlContent)
       const blob = new Blob([wordContent], { type: 'application/msword' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
