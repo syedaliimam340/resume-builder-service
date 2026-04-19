@@ -406,7 +406,7 @@ export function TemplateGallery() {
   const editorSteps = ['Personal Info', 'Experience', 'Education', 'Skills', 'Preview']
 
   return (
-    <section id="templates" className="py-24 bg-card/30">
+    <section id="templates" className="py-12 md:py-24 bg-card/30">
       <div className="container px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -513,8 +513,8 @@ export function TemplateGallery() {
                   </div>
                 </div>
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                {/* Hover overlay - desktop only */}
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                   <Button 
                     size="sm"
                     onClick={() => createNewResume(template)}
@@ -534,7 +534,16 @@ export function TemplateGallery() {
                     {template.category}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{template.description}</p>
+                <p className="text-sm text-muted-foreground mb-3">{template.description}</p>
+                {/* Mobile create button - always visible on touch devices */}
+                <Button
+                  size="sm"
+                  onClick={() => createNewResume(template)}
+                  className="w-full gap-2 md:hidden"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Resume
+                </Button>
               </div>
             </div>
           ))}
@@ -567,55 +576,58 @@ export function TemplateGallery() {
       {/* Editor Modal */}
       {isEditorOpen && currentResume && selectedTemplate && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-auto">
-          <div className="min-h-screen py-8 px-4">
+          <div className="min-h-screen py-4 md:py-8 px-4">
             <div className="max-w-5xl mx-auto">
               {/* Editor Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between mb-4 md:mb-6 gap-2">
+                <div className="flex items-center gap-2 md:gap-4 min-w-0">
                   <Button 
                     variant="ghost" 
                     size="icon"
                     onClick={() => setIsEditorOpen(false)}
+                    className="shrink-0"
                   >
                     <X className="h-5 w-5" />
                   </Button>
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
                       {currentResume.name || 'New Resume'}
                     </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Template: {selectedTemplate.name}
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">
+                      {selectedTemplate.name}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                   <Button 
                     variant="outline" 
+                    size="sm"
                     onClick={saveResume}
-                    className="gap-2"
+                    className="gap-1 md:gap-2"
                   >
                     <Save className="h-4 w-4" />
-                    Save
+                    <span className="hidden sm:inline">Save</span>
                   </Button>
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => setIsPreviewOpen(true)}
-                    className="gap-2"
+                    className="gap-1 md:gap-2"
                   >
                     <Eye className="h-4 w-4" />
-                    Preview
+                    <span className="hidden sm:inline">Preview</span>
                   </Button>
                 </div>
               </div>
 
-              {/* Step Navigation */}
-              <div className="flex items-center justify-center gap-2 mb-8">
+              {/* Step Navigation - scrollable on mobile */}
+              <div className="flex items-center gap-2 mb-6 md:mb-8 overflow-x-auto pb-2 scrollbar-hide">
                 {editorSteps.map((step, idx) => (
                   <button
                     key={step}
                     onClick={() => setEditorStep(idx)}
                     className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                      "px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0",
                       editorStep === idx 
                         ? "bg-primary text-primary-foreground" 
                         : "bg-card text-muted-foreground hover:text-foreground"
@@ -854,13 +866,13 @@ export function TemplateGallery() {
                 {/* Preview & Download */}
                 {editorStep === 4 && (
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <h3 className="text-lg font-semibold text-foreground">Preview & Download</h3>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleDownload('pdf')}
                           disabled={isDownloading}
-                          className="gap-2"
+                          className="gap-2 flex-1 sm:flex-none"
                         >
                           {isDownloading && downloadFormat === 'pdf' ? (
                             <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -873,7 +885,7 @@ export function TemplateGallery() {
                           variant="outline"
                           onClick={() => handleDownload('docx')}
                           disabled={isDownloading}
-                          className="gap-2"
+                          className="gap-2 flex-1 sm:flex-none"
                         >
                           {isDownloading && downloadFormat === 'docx' ? (
                             <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -886,9 +898,9 @@ export function TemplateGallery() {
                     </div>
                     
                     {/* Resume Preview */}
-                    <div className="bg-muted/50 rounded-lg p-6 overflow-auto">
+                    <div className="bg-muted/50 rounded-lg p-3 md:p-6 overflow-auto">
                       <div 
-                        className="max-w-2xl mx-auto rounded-lg shadow-xl p-8"
+                        className="max-w-2xl mx-auto rounded-lg shadow-xl p-4 md:p-8"
                         style={{ backgroundColor: selectedTemplate.colors.background }}
                       >
                         <div 
