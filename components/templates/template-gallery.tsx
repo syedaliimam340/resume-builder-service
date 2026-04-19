@@ -301,9 +301,9 @@ export function TemplateGallery() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     h1 { font-size: 22px; font-weight: bold; margin-bottom: 2px; }
     .contact { font-size: 13px; margin-bottom: 16px; }
     .title { font-size: 15px; margin-bottom: 4px; }
@@ -361,7 +361,7 @@ export function TemplateGallery() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     body { 
       font-family: 'Segoe UI', system-ui, sans-serif; 
       background: ${template.colors.background}; 
@@ -370,10 +370,10 @@ export function TemplateGallery() {
       padding: 40px;
       max-width: 800px;
       margin: 0 auto;
-      -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
     }
-    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     .header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent}; }
     .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
     .title { font-size: 16px; color: ${template.colors.accent}; margin-bottom: 8px; }
@@ -464,10 +464,12 @@ export function TemplateGallery() {
         }
       }
     } else {
-      const wordContent = htmlContent.replace(
-        '<html lang="en">',
-        '<html lang="en" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">'
-      )
+      const wordContent = htmlContent.replace(/<html([^>]*)>/i, (match, attrs) => {
+        if (/xmlns:o=|xmlns:w=/i.test(match)) {
+          return match
+        }
+        return `<html${attrs} xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">`
+      })
       const blob = new Blob([wordContent], { type: 'application/msword' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
