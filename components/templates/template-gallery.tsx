@@ -301,8 +301,9 @@ export function TemplateGallery() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
     h1 { font-size: 22px; font-weight: bold; margin-bottom: 2px; }
     .contact { font-size: 13px; margin-bottom: 16px; }
     .title { font-size: 15px; margin-bottom: 4px; }
@@ -319,7 +320,7 @@ export function TemplateGallery() {
     .edu-degree { font-weight: bold; font-size: 13px; }
     .edu-school { font-size: 13px; }
     .skills-list { font-size: 13px; }
-    @media print { body { padding: 20px; } }
+    @media print { body { padding: 20px; background: #ffffff; } }
   </style>
 </head>
 <body>
@@ -360,7 +361,7 @@ export function TemplateGallery() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
     body { 
       font-family: 'Segoe UI', system-ui, sans-serif; 
       background: ${template.colors.background}; 
@@ -369,7 +370,11 @@ export function TemplateGallery() {
       padding: 40px;
       max-width: 800px;
       margin: 0 auto;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
     }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
     .header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent}; }
     .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
     .title { font-size: 16px; color: ${template.colors.accent}; margin-bottom: 8px; }
@@ -388,7 +393,7 @@ export function TemplateGallery() {
     .edu-school { font-size: 13px; color: #666; }
     .skills { display: flex; flex-wrap: wrap; gap: 8px; }
     .skill { background: ${template.colors.accent}15; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
-    @media print { body { padding: 20px; } }
+    @media print { body { padding: 20px; background: ${template.colors.background}; } }
   </style>
 </head>
 <body>
@@ -460,13 +465,10 @@ export function TemplateGallery() {
         }
       }
     } else {
-      // Generate Word-compatible HTML
-      const wordContent = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
-        <head><meta charset="UTF-8"><title>${currentResume.name} Resume</title></head>
-        <body>${htmlContent}</body>
-        </html>
-      `
+      const wordContent = htmlContent.replace(
+        '<html lang="en">',
+        '<html lang="en" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">'
+      )
       const blob = new Blob([wordContent], { type: 'application/msword' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
