@@ -406,11 +406,11 @@ export function TemplateGallery() {
     .edu-degree { font-weight: 600; }
     .edu-school { font-size: 13px; color: #666; }
     .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .skill { background: ${template.colors.accent}15; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
+    .skill { background: ${accentTint}; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
     @media print { body { padding: 20px; background: ${template.colors.background}; } }
   </style>
 </head>
- <body style="font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px;">
+ <body style="font-family: 'Segoe UI', system-ui, sans-serif; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; print-color-adjust: exact; -webkit-print-color-adjust: exact;">
    <div class="header" style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent};">
      <div class="name" style="color: ${template.colors.primary};">${resume.name || 'Your Name'}</div>
      <div class="title" style="color: ${template.colors.accent};">${resume.title || 'Professional Title'}</div>
