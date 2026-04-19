@@ -444,9 +444,12 @@ export function TemplateGallery() {
   }
 
   const addWordNamespaces = (html: string) => {
-    if (typeof DOMParser === 'undefined') return html
+    const normalized = html.replace(/<!doctype[^>]*>/i, '').trim()
+    if (typeof DOMParser === 'undefined') {
+      return `<!DOCTYPE html>${normalized}`
+    }
     const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
+    const doc = parser.parseFromString(normalized, 'text/html')
     const htmlEl = doc.documentElement
     if (!htmlEl.getAttribute('xmlns:o')) {
       htmlEl.setAttribute('xmlns:o', 'urn:schemas-microsoft-com:office:office')
