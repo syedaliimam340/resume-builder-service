@@ -306,6 +306,49 @@ export function TemplateGallery() {
   const generateResumeHTML = (resume: ResumeData, template: Template) => {
     const isATS = template.category === 'ATS'
     const accentTint = mixWithWhite(template.colors.accent, 0.15)
+    // Apply print color adjustments in both CSS and inline styles for PDF/Word export fidelity.
+    const printAdjust = 'print-color-adjust: exact; -webkit-print-color-adjust: exact;'
+    const defaultFontFamily = "'Segoe UI', system-ui, sans-serif"
+    const secondaryTextColor = mixWithWhite(template.colors.primary, 0.45)
+    const tertiaryTextColor = mixWithWhite(template.colors.primary, 0.6)
+    const dividerColor = mixWithWhite(template.colors.primary, 0.2)
+
+    const bodyStyle = `font-family: ${defaultFontFamily}; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; ${printAdjust}`
+    const headerStyle = `margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent};`
+    const nameStyle = `font-size: 28px; font-weight: 700; margin-bottom: 4px; color: ${template.colors.primary};`
+    const titleStyle = `font-size: 16px; font-weight: 600; color: ${template.colors.accent}; margin-bottom: 8px;`
+    const contactStyle = `font-size: 12px; color: ${secondaryTextColor};`
+    const sectionStyle = 'margin-bottom: 20px;'
+    const sectionTitleStyle = `font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: ${template.colors.accent}; margin-bottom: 12px; border-bottom: 1px solid ${dividerColor}; padding-bottom: 4px;`
+    const summaryStyle = `font-size: 14px; color: ${tertiaryTextColor};`
+    const jobStyle = 'margin-bottom: 16px;'
+    const jobHeaderStyle = 'display: flex; justify-content: space-between; margin-bottom: 4px; gap: 12px;'
+    const jobTitleStyle = `font-weight: 600; color: ${template.colors.primary};`
+    const jobPeriodStyle = `font-size: 12px; color: ${secondaryTextColor}; white-space: nowrap;`
+    const jobCompanyStyle = `font-size: 14px; color: ${template.colors.accent};`
+    const bulletsStyle = `list-style: disc; padding-left: 20px; font-size: 13px; margin-top: 6px; color: ${tertiaryTextColor};`
+    const eduItemStyle = 'margin-bottom: 8px;'
+    const eduDegreeStyle = `font-weight: 600; color: ${template.colors.primary};`
+    const eduSchoolStyle = `font-size: 13px; color: ${secondaryTextColor};`
+    const skillsStyle = 'display: flex; flex-wrap: wrap; gap: 8px;'
+    const skillStyle = `background: ${accentTint}; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px;`
+
+    const atsBodyStyle = `font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; ${printAdjust}`
+    const atsNameStyle = 'font-size: 22px; font-weight: bold; margin-bottom: 2px; color: #000000;'
+    const atsTitleStyle = 'font-size: 15px; margin-bottom: 4px; color: #000000;'
+    const atsContactStyle = 'font-size: 13px; margin-bottom: 16px; color: #000000;'
+    const atsSectionTitleStyle = 'font-size: 14px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-top: 16px; margin-bottom: 8px; letter-spacing: 0.5px; color: #000000;'
+    const atsParagraphStyle = 'font-size: 13px; margin-bottom: 8px; color: #000000;'
+    const atsJobStyle = 'margin-bottom: 12px;'
+    const atsJobHeaderStyle = 'display: flex; justify-content: space-between; margin-bottom: 2px; gap: 12px;'
+    const atsJobTitleStyle = 'font-weight: bold; font-size: 13px; color: #000000;'
+    const atsJobCompanyStyle = 'font-size: 13px; color: #000000;'
+    const atsJobPeriodStyle = 'font-size: 12px; color: #000000; white-space: nowrap;'
+    const atsListStyle = 'list-style: disc; padding-left: 18px; font-size: 13px; margin-top: 4px; color: #000000;'
+    const atsEduItemStyle = 'margin-bottom: 8px;'
+    const atsEduDegreeStyle = 'font-weight: bold; font-size: 13px; color: #000000;'
+    const atsEduSchoolStyle = 'font-size: 13px; color: #000000;'
+    const atsSkillsStyle = 'font-size: 13px; color: #000000;'
 
     if (isATS) {
       // ATS-optimized output: plain structure, no decorative styles, standard fonts
@@ -316,55 +359,38 @@ export function TemplateGallery() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    h1 { font-size: 22px; font-weight: bold; margin-bottom: 2px; }
-    .contact { font-size: 13px; margin-bottom: 16px; }
-    .title { font-size: 15px; margin-bottom: 4px; }
-    h2 { font-size: 14px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-top: 16px; margin-bottom: 8px; letter-spacing: 0.5px; }
-    p { font-size: 13px; margin-bottom: 8px; }
-    .job { margin-bottom: 12px; }
-    .job-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
-    .job-title { font-weight: bold; font-size: 13px; }
-    .job-company { font-size: 13px; }
-    .job-period { font-size: 12px; }
-    ul { list-style: disc; padding-left: 18px; font-size: 13px; margin-top: 4px; }
-    li { margin-bottom: 2px; }
-    .edu-item { margin-bottom: 8px; }
-    .edu-degree { font-weight: bold; font-size: 13px; }
-    .edu-school { font-size: 13px; }
-    .skills-list { font-size: 13px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; ${printAdjust} }
+    html, body { ${printAdjust} }
     @media print { body { padding: 20px; background: #ffffff; } }
   </style>
 </head>
- <body style="font-family: 'Segoe UI', system-ui, sans-serif; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto;">
-   <h1 style="color: #000000;">${resume.name || 'Your Name'}</h1>
-   <div class="title" style="color: #000000;">${resume.title || ''}</div>
-   <div class="contact" style="color: #000000;">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
-
-  ${resume.summary ? `<h2>Professional Summary</h2>
-  <p>${resume.summary}</p>` : ''}
-
-  ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<h2>Work Experience</h2>
+ <body style="${atsBodyStyle}">
+   <h1 style="${atsNameStyle}">${resume.name || 'Your Name'}</h1>
+   <div style="${atsTitleStyle}">${resume.title || ''}</div>
+   <div style="${atsContactStyle}">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
+ 
+  ${resume.summary ? `<h2 style="${atsSectionTitleStyle}">Professional Summary</h2>
+  <p style="${atsParagraphStyle}">${resume.summary}</p>` : ''}
+ 
+  ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<h2 style="${atsSectionTitleStyle}">Work Experience</h2>
   ${resume.experience.filter(job => job.company || job.title).map(job => `
-  <div class="job">
-    <div class="job-header">
-      <span class="job-title">${job.title || 'Job Title'} — <span class="job-company">${job.company || 'Company'}</span></span>
-      <span class="job-period">${job.period || ''}</span>
+  <div style="${atsJobStyle}">
+    <div style="${atsJobHeaderStyle}">
+      <span style="${atsJobTitleStyle}">${job.title || 'Job Title'} — <span style="${atsJobCompanyStyle}">${job.company || 'Company'}</span></span>
+      <span style="${atsJobPeriodStyle}">${job.period || ''}</span>
     </div>
-    ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul>${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
+    ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul style="${atsListStyle}">${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
   </div>`).join('')}` : ''}
-
-  ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<h2>Education</h2>
+ 
+  ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<h2 style="${atsSectionTitleStyle}">Education</h2>
   ${resume.education.filter(edu => edu.school || edu.degree).map(edu => `
-  <div class="edu-item">
-    <div class="edu-degree">${edu.degree || 'Degree'}</div>
-    <div class="edu-school">${edu.school || 'School'}${edu.year ? ` (${edu.year})` : ''}</div>
+  <div style="${atsEduItemStyle}">
+    <div style="${atsEduDegreeStyle}">${edu.degree || 'Degree'}</div>
+    <div style="${atsEduSchoolStyle}">${edu.school || 'School'}${edu.year ? ` (${edu.year})` : ''}</div>
   </div>`).join('')}` : ''}
-
-  ${resume.skills.length > 0 ? `<h2>Skills</h2>
-  <p class="skills-list">${resume.skills.join(', ')}</p>` : ''}
+ 
+  ${resume.skills.length > 0 ? `<h2 style="${atsSectionTitleStyle}">Skills</h2>
+  <p style="${atsSkillsStyle}">${resume.skills.join(', ')}</p>` : ''}
 </body>
 </html>`
     }
@@ -376,82 +402,53 @@ export function TemplateGallery() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${resume.name || 'Resume'} - Resume</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-     body { 
-       font-family: 'Segoe UI', system-ui, sans-serif; 
-       background: ${template.colors.background}; 
-       color: ${template.colors.primary};
-       line-height: 1.6;
-       padding: 40px;
-       max-width: 800px;
-       margin: 0 auto;
-       print-color-adjust: exact;
-       -webkit-print-color-adjust: exact;
-     }
-    html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    .header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent}; }
-     .name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-     .title { font-size: 16px; color: ${template.colors.accent}; margin-bottom: 8px; }
-    .contact { font-size: 12px; color: #666; }
-    .section { margin-bottom: 20px; }
-    .section-title { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: ${template.colors.accent}; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
-    .summary { font-size: 14px; color: #4b5563; }
-    .job { margin-bottom: 16px; }
-    .job-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .job-title { font-weight: 600; }
-    .job-period { font-size: 12px; color: #666; }
-    .job-company { font-size: 14px; color: ${template.colors.accent}; }
-    .bullets { list-style: disc; padding-left: 20px; font-size: 13px; }
-    .edu-item { margin-bottom: 8px; }
-    .edu-degree { font-weight: 600; }
-    .edu-school { font-size: 13px; color: #666; }
-    .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .skill { background: ${accentTint}; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; ${printAdjust} }
+    html, body { ${printAdjust} }
     @media print { body { padding: 20px; background: ${template.colors.background}; } }
   </style>
 </head>
- <body style="font-family: 'Segoe UI', system-ui, sans-serif; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; print-color-adjust: exact; -webkit-print-color-adjust: exact;">
-   <div class="header" style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid ${template.colors.accent};">
-     <div class="name" style="color: ${template.colors.primary};">${resume.name || 'Your Name'}</div>
-     <div class="title" style="color: ${template.colors.accent};">${resume.title || 'Professional Title'}</div>
-     <div class="contact" style="color: #666;">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
+ <body style="${bodyStyle}">
+   <div style="${headerStyle}">
+     <div style="${nameStyle}">${resume.name || 'Your Name'}</div>
+     <div style="${titleStyle}">${resume.title || 'Professional Title'}</div>
+     <div style="${contactStyle}">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
    </div>
    
-   ${resume.summary ? `<div class="section">
-     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Professional Summary</div>
-     <p class="summary" style="color: #4b5563;">${resume.summary}</p>
+   ${resume.summary ? `<div style="${sectionStyle}">
+     <div style="${sectionTitleStyle}">Professional Summary</div>
+     <p style="${summaryStyle}">${resume.summary}</p>
    </div>` : ''}
    
-   ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<div class="section">
-     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Experience</div>
+   ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<div style="${sectionStyle}">
+     <div style="${sectionTitleStyle}">Experience</div>
      ${resume.experience.filter(job => job.company || job.title).map(job => `
-       <div class="job">
-         <div class="job-header">
-           <span class="job-title" style="color: ${template.colors.primary};">${job.title || 'Job Title'}</span>
-           <span class="job-period" style="color: #666;">${job.period || ''}</span>
+       <div style="${jobStyle}">
+         <div style="${jobHeaderStyle}">
+           <span style="${jobTitleStyle}">${job.title || 'Job Title'}</span>
+           <span style="${jobPeriodStyle}">${job.period || ''}</span>
          </div>
-         <div class="job-company" style="color: ${template.colors.accent};">${job.company || 'Company'}</div>
-         ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul class="bullets">
+         <div style="${jobCompanyStyle}">${job.company || 'Company'}</div>
+         ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul style="${bulletsStyle}">
            ${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}
          </ul>` : ''}
        </div>
      `).join('')}
    </div>` : ''}
    
-   ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<div class="section">
-     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Education</div>
+   ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<div style="${sectionStyle}">
+     <div style="${sectionTitleStyle}">Education</div>
      ${resume.education.filter(edu => edu.school || edu.degree).map(edu => `
-       <div class="edu-item">
-         <div class="edu-degree" style="color: ${template.colors.primary};">${edu.degree || 'Degree'}</div>
-         <div class="edu-school" style="color: #666;">${edu.school || 'School'}${edu.year ? `, ${edu.year}` : ''}</div>
+       <div style="${eduItemStyle}">
+         <div style="${eduDegreeStyle}">${edu.degree || 'Degree'}</div>
+         <div style="${eduSchoolStyle}">${edu.school || 'School'}${edu.year ? `, ${edu.year}` : ''}</div>
        </div>
      `).join('')}
    </div>` : ''}
    
-   ${resume.skills.length > 0 ? `<div class="section">
-     <div class="section-title" style="color: ${template.colors.accent}; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Skills</div>
-     <div class="skills">
-       ${resume.skills.map(skill => `<span class="skill" style="background: ${accentTint}; color: ${template.colors.accent}; padding: 4px 12px; border-radius: 4px; font-size: 12px;">${skill}</span>`).join('')}
+   ${resume.skills.length > 0 ? `<div style="${sectionStyle}">
+     <div style="${sectionTitleStyle}">Skills</div>
+     <div style="${skillsStyle}">
+       ${resume.skills.map(skill => `<span style="${skillStyle}">${skill}</span>`).join('')}
      </div>
    </div>` : ''}
 </body>
