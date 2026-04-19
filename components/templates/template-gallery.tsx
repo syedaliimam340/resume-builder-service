@@ -53,6 +53,8 @@ interface ResumeData {
   updatedAt: number
 }
 
+const DEFAULT_TEMPLATE_ID = 'modern-professional'
+
 const templates: Template[] = [
   {
     id: 'modern-professional',
@@ -95,6 +97,20 @@ const templates: Template[] = [
     category: 'Tech',
     description: 'Optimized for software developers with skills matrix',
     colors: { primary: '#0d9488', accent: '#06b6d4', background: '#f0fdfa' },
+  },
+  {
+    id: 'ats-professional',
+    name: 'ATS Optimized Professional',
+    category: 'ATS',
+    description: 'Maximum ATS compatibility with clean, simple formatting for best parsing results',
+    colors: { primary: '#1a1a1a', accent: '#2563eb', background: '#ffffff' },
+  },
+  {
+    id: 'ats-modern',
+    name: 'ATS Optimized Modern',
+    category: 'ATS',
+    description: 'Professional look with ATS optimization — ideal for corporate and tech roles',
+    colors: { primary: '#111827', accent: '#0ea5e9', background: '#f8fafc' },
   },
 ]
 
@@ -274,6 +290,69 @@ export function TemplateGallery() {
   }
 
   const generateResumeHTML = (resume: ResumeData, template: Template) => {
+    const isATS = template.category === 'ATS'
+
+    if (isATS) {
+      // ATS-optimized output: plain structure, no decorative styles, standard fonts
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${resume.name || 'Resume'} - Resume</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.5; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; }
+    h1 { font-size: 22px; font-weight: bold; margin-bottom: 2px; }
+    .contact { font-size: 13px; margin-bottom: 16px; }
+    .title { font-size: 15px; margin-bottom: 4px; }
+    h2 { font-size: 14px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-top: 16px; margin-bottom: 8px; letter-spacing: 0.5px; }
+    p { font-size: 13px; margin-bottom: 8px; }
+    .job { margin-bottom: 12px; }
+    .job-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .job-title { font-weight: bold; font-size: 13px; }
+    .job-company { font-size: 13px; }
+    .job-period { font-size: 12px; }
+    ul { list-style: disc; padding-left: 18px; font-size: 13px; margin-top: 4px; }
+    li { margin-bottom: 2px; }
+    .edu-item { margin-bottom: 8px; }
+    .edu-degree { font-weight: bold; font-size: 13px; }
+    .edu-school { font-size: 13px; }
+    .skills-list { font-size: 13px; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <h1>${resume.name || 'Your Name'}</h1>
+  <div class="title">${resume.title || ''}</div>
+  <div class="contact">${[resume.email, resume.phone, resume.location].filter(Boolean).join(' | ')}</div>
+
+  ${resume.summary ? `<h2>Professional Summary</h2>
+  <p>${resume.summary}</p>` : ''}
+
+  ${resume.experience.length > 0 && resume.experience.some(e => e.company || e.title) ? `<h2>Work Experience</h2>
+  ${resume.experience.filter(job => job.company || job.title).map(job => `
+  <div class="job">
+    <div class="job-header">
+      <span class="job-title">${job.title || 'Job Title'} — <span class="job-company">${job.company || 'Company'}</span></span>
+      <span class="job-period">${job.period || ''}</span>
+    </div>
+    ${job.bullets.filter(b => b.trim()).length > 0 ? `<ul>${job.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
+  </div>`).join('')}` : ''}
+
+  ${resume.education.length > 0 && resume.education.some(e => e.school || e.degree) ? `<h2>Education</h2>
+  ${resume.education.filter(edu => edu.school || edu.degree).map(edu => `
+  <div class="edu-item">
+    <div class="edu-degree">${edu.degree || 'Degree'}</div>
+    <div class="edu-school">${edu.school || 'School'}${edu.year ? ` (${edu.year})` : ''}</div>
+  </div>`).join('')}` : ''}
+
+  ${resume.skills.length > 0 ? `<h2>Skills</h2>
+  <p class="skills-list">${resume.skills.join(', ')}</p>` : ''}
+</body>
+</html>`
+    }
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -466,7 +545,7 @@ export function TemplateGallery() {
         )}
 
         {/* Template Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
             <div
               key={template.id}
@@ -513,8 +592,8 @@ export function TemplateGallery() {
                   </div>
                 </div>
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                {/* Hover overlay — visible on hover (desktop) */}
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center gap-3">
                   <Button 
                     size="sm"
                     onClick={() => createNewResume(template)}
@@ -534,11 +613,32 @@ export function TemplateGallery() {
                     {template.category}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{template.description}</p>
+                <p className="text-sm text-muted-foreground mb-3">{template.description}</p>
+                {/* Always-visible Create Resume button (important for mobile) */}
+                <Button
+                  size="sm"
+                  onClick={() => createNewResume(template)}
+                  className="w-full gap-2 md:hidden"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Resume
+                </Button>
               </div>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Floating Action Button — mobile only */}
+      <div className="fixed bottom-6 right-6 z-40 md:hidden">
+        <Button
+          size="lg"
+          onClick={() => createNewResume(templates.find(t => t.id === DEFAULT_TEMPLATE_ID) ?? templates[0])}
+          className="rounded-full h-14 w-14 shadow-lg gap-0 p-0"
+          title="Create Resume"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
       </div>
 
       {/* Delete Confirmation Modal */}
