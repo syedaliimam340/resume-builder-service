@@ -28,33 +28,6 @@ export const templates: TemplateData[] = [
     category: 'MINIMAL',
     tierRequired: 'FREE',
   },
-  {
-    id: 'creative-bold',
-    name: 'Creative Bold',
-    slug: 'creative-bold',
-    description: 'Eye-catching design for creative professionals',
-    thumbnailUrl: '/templates/creative-bold.png',
-    category: 'CREATIVE',
-    tierRequired: 'PRO',
-  },
-  {
-    id: 'executive-premium',
-    name: 'Executive Premium',
-    slug: 'executive-premium',
-    description: 'Sophisticated design for senior leadership positions',
-    thumbnailUrl: '/templates/executive-premium.png',
-    category: 'PROFESSIONAL',
-    tierRequired: 'PRO',
-  },
-  {
-    id: 'tech-developer',
-    name: 'Tech Developer',
-    slug: 'tech-developer',
-    description: 'Optimized for software developers with skills matrix',
-    thumbnailUrl: '/templates/tech-developer.png',
-    category: 'MODERN',
-    tierRequired: 'FREE',
-  },
 ]
 
 export function getTemplateById(id: string): TemplateData | undefined {
