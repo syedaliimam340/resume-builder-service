@@ -306,10 +306,11 @@ export function TemplateGallery() {
   const generateResumeHTML = (resume: ResumeData, template: Template) => {
     const isATS = template.category === 'ATS'
     const accentTint = mixWithWhite(template.colors.accent, 0.15)
+    // Apply print color adjustments in both CSS and inline styles for PDF/Word export fidelity.
     const printAdjust = 'print-color-adjust: exact; -webkit-print-color-adjust: exact;'
     const styledFontFamily = "'Segoe UI', system-ui, sans-serif"
     const mutedTextColor = mixWithWhite(template.colors.primary, 0.45)
-    const bodyTextColor = mixWithWhite(template.colors.primary, 0.6)
+    const fadedBodyTextColor = mixWithWhite(template.colors.primary, 0.6)
     const dividerColor = mixWithWhite(template.colors.primary, 0.2)
 
     const bodyStyle = `font-family: ${styledFontFamily}; background: ${template.colors.background}; color: ${template.colors.primary}; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; font-size: 14px; ${printAdjust}`
@@ -319,13 +320,13 @@ export function TemplateGallery() {
     const contactStyle = `font-size: 12px; color: ${mutedTextColor};`
     const sectionStyle = 'margin-bottom: 20px;'
     const sectionTitleStyle = `font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: ${template.colors.accent}; margin-bottom: 12px; border-bottom: 1px solid ${dividerColor}; padding-bottom: 4px;`
-    const summaryStyle = `font-size: 14px; color: ${bodyTextColor};`
+    const summaryStyle = `font-size: 14px; color: ${fadedBodyTextColor};`
     const jobStyle = 'margin-bottom: 16px;'
     const jobHeaderStyle = 'display: flex; justify-content: space-between; margin-bottom: 4px; gap: 12px;'
     const jobTitleStyle = `font-weight: 600; color: ${template.colors.primary};`
     const jobPeriodStyle = `font-size: 12px; color: ${mutedTextColor}; white-space: nowrap;`
     const jobCompanyStyle = `font-size: 14px; color: ${template.colors.accent};`
-    const bulletsStyle = `list-style: disc; padding-left: 20px; font-size: 13px; margin-top: 6px; color: ${bodyTextColor};`
+    const bulletsStyle = `list-style: disc; padding-left: 20px; font-size: 13px; margin-top: 6px; color: ${fadedBodyTextColor};`
     const eduItemStyle = 'margin-bottom: 8px;'
     const eduDegreeStyle = `font-weight: 600; color: ${template.colors.primary};`
     const eduSchoolStyle = `font-size: 13px; color: ${mutedTextColor};`
