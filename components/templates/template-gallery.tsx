@@ -480,27 +480,49 @@ export function TemplateGallery() {
     
     setIsDownloading(true)
     setDownloadFormat(format)
+
+    let mobilePdfTab: Window | null = null
+    if (format === 'pdf' && isMobile) {
+      mobilePdfTab = window.open('', '_blank')
+      if (!mobilePdfTab) {
+        window.alert('Popup blocked. Please allow popups in your browser to open the PDF.')
+        setIsDownloading(false)
+        setDownloadFormat(null)
+        return
+      }
+      mobilePdfTab.document.write('<!doctype html><html><head><title>Preparing Resume PDF...</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Preparing your resume...</body></html>')
+      mobilePdfTab.document.close()
+    }
     
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
     
     if (format === 'pdf') {
-      // Open in new window for print to PDF
-      const printWindow = window.open('', '_blank')
-      if (printWindow) {
-        printWindow.document.write(htmlContent)
-        printWindow.document.close()
-        const doPrint = () => {
-          setTimeout(() => {
-            printWindow.focus()
-            printWindow.print()
-          }, 500)
+      // On mobile, tab is opened synchronously to avoid popup blockers.
+      if (isMobile) {
+        if (mobilePdfTab && !mobilePdfTab.closed) {
+          mobilePdfTab.document.open()
+          mobilePdfTab.document.write(htmlContent)
+          mobilePdfTab.document.close()
         }
-        if (printWindow.document.readyState === 'complete') {
-          doPrint()
-        } else {
-          printWindow.onload = doPrint
+      } else {
+        // Desktop behavior unchanged: open print dialog.
+        const printWindow = window.open('', '_blank')
+        if (printWindow) {
+          printWindow.document.write(htmlContent)
+          printWindow.document.close()
+          const doPrint = () => {
+            setTimeout(() => {
+              printWindow.focus()
+              printWindow.print()
+            }, 500)
+          }
+          if (printWindow.document.readyState === 'complete') {
+            doPrint()
+          } else {
+            printWindow.onload = doPrint
+          }
         }
       }
     } else {
