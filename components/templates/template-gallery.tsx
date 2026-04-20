@@ -483,7 +483,7 @@ export function TemplateGallery() {
 
     let mobilePdfTab: Window | null = null
     if (format === 'pdf' && isMobile) {
-      mobilePdfTab = window.open('', '_blank')
+      mobilePdfTab = window.open('', '_blank', 'noopener,noreferrer')
       if (!mobilePdfTab) {
         window.alert('Popup blocked. Please allow popups in your browser to open the PDF.')
         setIsDownloading(false)
