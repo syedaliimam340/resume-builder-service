@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -131,7 +131,6 @@ const STORAGE_KEY = 'kangaroo-developers-resumes'
 export function TemplateGallery() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [savedResumes, setSavedResumes] = useState<ResumeData[]>([])
   const [currentResume, setCurrentResume] = useState<ResumeData | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -140,6 +139,7 @@ export function TemplateGallery() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   const [newSkill, setNewSkill] = useState('')
   const [editorStep, setEditorStep] = useState(0)
+  const previewRef = useRef<HTMLDivElement>(null)
 
   // Load saved resumes from localStorage
   useEffect(() => {
@@ -455,22 +455,6 @@ export function TemplateGallery() {
 </html>`
   }
 
-  const addWordNamespaces = (html: string) => {
-    const normalized = html.replace(/<!doctype[^>]*>/i, '').trim()
-    if (typeof DOMParser === 'undefined') {
-      return `<!DOCTYPE html>${normalized}`
-    }
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(normalized, 'text/html')
-    const htmlEl = doc.documentElement
-    if (!htmlEl.getAttribute('xmlns:o')) {
-      htmlEl.setAttribute('xmlns:o', 'urn:schemas-microsoft-com:office:office')
-    }
-    if (!htmlEl.getAttribute('xmlns:w')) {
-      htmlEl.setAttribute('xmlns:w', 'urn:schemas-microsoft-com:office:word')
-    }
-    return `<!DOCTYPE html>${htmlEl.outerHTML}`
-  }
 
   const handleDownload = async (format: 'pdf' | 'docx') => {
     if (!currentResume || !selectedTemplate) return
@@ -478,35 +462,232 @@ export function TemplateGallery() {
     setIsDownloading(true)
     setDownloadFormat(format)
     
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
-    
-    if (format === 'pdf') {
-      // Open in new window for print to PDF
-      const printWindow = window.open('', '_blank')
-      if (printWindow) {
-        printWindow.document.write(htmlContent)
-        printWindow.document.close()
-        printWindow.onload = () => {
-          printWindow.print()
+    try {
+      if (format === 'pdf') {
+        const previewEl = previewRef.current
+        if (!previewEl) {
+          // Fallback: open the generated HTML for printing
+          const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
+          const blob = new Blob([htmlContent], { type: 'text/html' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.target = '_blank'
+          a.rel = 'noopener'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          setTimeout(() => URL.revokeObjectURL(url), 5000)
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const html2pdf = ((await import('html2pdf.js')) as any).default
+          await html2pdf()
+            .set({
+              margin: [5, 5, 5, 5],
+              filename: `${currentResume.name || 'resume'}.pdf`,
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+              },
+              jsPDF: {
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'portrait',
+              },
+            })
+            .from(previewEl)
+            .save()
         }
+      } else {
+        // DOCX download using docx library
+        const {
+          Document,
+          Packer,
+          Paragraph,
+          TextRun,
+          AlignmentType,
+          BorderStyle,
+          UnderlineType,
+        } = await import('docx')
+
+        const resume = currentResume
+        const template = selectedTemplate
+
+        const primaryHex = template.colors.primary.replace('#', '')
+        const accentHex = template.colors.accent.replace('#', '')
+
+        const sectionHeading = (text: string) =>
+          new Paragraph({
+            children: [
+              new TextRun({
+                text,
+                bold: true,
+                size: 24,
+                color: accentHex,
+                underline: { type: UnderlineType.SINGLE },
+              }),
+            ],
+            spacing: { before: 200, after: 80 },
+          })
+
+        const children: InstanceType<typeof Paragraph>[] = []
+
+        // Name
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: resume.name || 'Your Name',
+                bold: true,
+                size: 52,
+                color: primaryHex,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 40 },
+          })
+        )
+
+        // Title
+        if (resume.title) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: resume.title,
+                  size: 28,
+                  color: accentHex,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 40 },
+            })
+          )
+        }
+
+        // Contact
+        const contactParts = [resume.email, resume.phone, resume.location].filter(Boolean)
+        if (contactParts.length > 0) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: contactParts.join('  |  '),
+                  size: 20,
+                  color: primaryHex,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 160 },
+              border: {
+                bottom: { color: accentHex, space: 1, style: BorderStyle.SINGLE, size: 6 },
+              },
+            })
+          )
+        }
+
+        // Summary
+        if (resume.summary) {
+          children.push(sectionHeading('Professional Summary'))
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: resume.summary, size: 20 })],
+              spacing: { after: 80 },
+            })
+          )
+        }
+
+        // Experience
+        const validExp = resume.experience.filter(e => e.company || e.title)
+        if (validExp.length > 0) {
+          children.push(sectionHeading('Work Experience'))
+          validExp.forEach(exp => {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: exp.title || 'Job Title', bold: true, size: 22, color: primaryHex }),
+                  new TextRun({ text: exp.period ? `  —  ${exp.period}` : '', size: 20 }),
+                ],
+                spacing: { after: 20 },
+              })
+            )
+            if (exp.company) {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: exp.company, size: 20, color: accentHex })],
+                  spacing: { after: 40 },
+                })
+              )
+            }
+            exp.bullets.filter(b => b.trim()).forEach(bullet => {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: bullet, size: 20 })],
+                  bullet: { level: 0 },
+                  spacing: { after: 20 },
+                })
+              )
+            })
+          })
+        }
+
+        // Education
+        const validEdu = resume.education.filter(e => e.school || e.degree)
+        if (validEdu.length > 0) {
+          children.push(sectionHeading('Education'))
+          validEdu.forEach(edu => {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: edu.degree || 'Degree', bold: true, size: 22, color: primaryHex }),
+                ],
+                spacing: { after: 20 },
+              })
+            )
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${edu.school || 'School'}${edu.year ? `, ${edu.year}` : ''}`,
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 80 },
+              })
+            )
+          })
+        }
+
+        // Skills
+        if (resume.skills.length > 0) {
+          children.push(sectionHeading('Skills'))
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: resume.skills.join(', '), size: 20 })],
+            })
+          )
+        }
+
+        const doc = new Document({
+          sections: [{ children }],
+        })
+
+        const blob = await Packer.toBlob(doc)
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${resume.name || 'resume'}-resume.docx`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
       }
-    } else {
-      const wordContent = addWordNamespaces(htmlContent)
-      const blob = new Blob([wordContent], { type: 'application/msword' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${currentResume.name || 'resume'}-resume.doc`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+    } finally {
+      setIsDownloading(false)
+      setDownloadFormat(null)
     }
-    
-    setIsDownloading(false)
-    setDownloadFormat(null)
   }
 
   const editorSteps = ['Personal Info', 'Experience', 'Education', 'Skills', 'Preview']
@@ -693,41 +874,42 @@ export function TemplateGallery() {
 
       {/* Editor Modal */}
       {isEditorOpen && currentResume && selectedTemplate && (
-        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-auto">
-          <div className="min-h-screen py-8 px-4">
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-y-scroll">
+          <div className="min-h-full py-4 sm:py-8 px-3 sm:px-4">
             <div className="max-w-5xl mx-auto">
               {/* Editor Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between mb-6">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <Button 
                     variant="ghost" 
                     size="icon"
                     onClick={() => setIsEditorOpen(false)}
+                    className="shrink-0"
                   >
                     <X className="h-5 w-5" />
                   </Button>
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-semibold text-foreground truncate">
                       {currentResume.name || 'New Resume'}
                     </h2>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
                       Template: {selectedTemplate.name}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 ml-10 sm:ml-0">
                   <Button 
                     variant="outline" 
                     onClick={saveResume}
-                    className="gap-2"
+                    className="gap-2 flex-1 sm:flex-none min-h-[44px]"
                   >
                     <Save className="h-4 w-4" />
                     Save
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setIsPreviewOpen(true)}
-                    className="gap-2"
+                    onClick={() => setEditorStep(4)}
+                    className="gap-2 flex-1 sm:flex-none min-h-[44px]"
                   >
                     <Eye className="h-4 w-4" />
                     Preview
@@ -736,30 +918,32 @@ export function TemplateGallery() {
               </div>
 
               {/* Step Navigation */}
-              <div className="flex items-center justify-center gap-2 mb-8">
-                {editorSteps.map((step, idx) => (
-                  <button
-                    key={step}
-                    onClick={() => setEditorStep(idx)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                      editorStep === idx 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-card text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {step}
-                  </button>
-                ))}
+              <div className="overflow-x-auto pb-2 mb-6 sm:mb-8">
+                <div className="flex items-center justify-start sm:justify-center gap-1 sm:gap-2 min-w-max mx-auto">
+                  {editorSteps.map((step, idx) => (
+                    <button
+                      key={step}
+                      onClick={() => setEditorStep(idx)}
+                      className={cn(
+                        "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap min-h-[44px]",
+                        editorStep === idx 
+                          ? "bg-primary text-primary-foreground" 
+                          : "bg-card text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {step}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Editor Content */}
-              <div className="bg-card border border-border rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-4 sm:p-6 overflow-x-hidden">
                 {/* Personal Info */}
                 {editorStep === 0 && (
-                  <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
                     <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
                         <Input
@@ -767,6 +951,7 @@ export function TemplateGallery() {
                           placeholder="John Doe"
                           value={currentResume.name}
                           onChange={(e) => updateResumeField('name', e.target.value)}
+                          className="min-h-[44px]"
                         />
                       </div>
                       <div className="space-y-2">
@@ -776,6 +961,7 @@ export function TemplateGallery() {
                           placeholder="Software Engineer"
                           value={currentResume.title}
                           onChange={(e) => updateResumeField('title', e.target.value)}
+                          className="min-h-[44px]"
                         />
                       </div>
                       <div className="space-y-2">
@@ -786,6 +972,7 @@ export function TemplateGallery() {
                           placeholder="john@example.com"
                           value={currentResume.email}
                           onChange={(e) => updateResumeField('email', e.target.value)}
+                          className="min-h-[44px]"
                         />
                       </div>
                       <div className="space-y-2">
@@ -795,6 +982,7 @@ export function TemplateGallery() {
                           placeholder="+1 (555) 123-4567"
                           value={currentResume.phone}
                           onChange={(e) => updateResumeField('phone', e.target.value)}
+                          className="min-h-[44px]"
                         />
                       </div>
                       <div className="space-y-2 sm:col-span-2">
@@ -804,6 +992,7 @@ export function TemplateGallery() {
                           placeholder="San Francisco, CA"
                           value={currentResume.location}
                           onChange={(e) => updateResumeField('location', e.target.value)}
+                          className="min-h-[44px]"
                         />
                       </div>
                       <div className="space-y-2 sm:col-span-2">
@@ -822,10 +1011,10 @@ export function TemplateGallery() {
 
                 {/* Experience */}
                 {editorStep === 1 && (
-                  <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-foreground">Work Experience</h3>
-                      <Button variant="outline" size="sm" onClick={addExperience} className="gap-2">
+                      <Button variant="outline" size="sm" onClick={addExperience} className="gap-2 min-h-[44px]">
                         <Plus className="h-4 w-4" />
                         Add Experience
                       </Button>
@@ -839,19 +1028,20 @@ export function TemplateGallery() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-destructive hover:text-destructive"
+                            className="text-destructive hover:text-destructive min-h-[44px] min-w-[44px]"
                             onClick={() => removeExperience(exp.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label>Job Title</Label>
                             <Input
                               placeholder="Software Engineer"
                               value={exp.title}
                               onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
+                              className="min-h-[44px]"
                             />
                           </div>
                           <div className="space-y-2">
@@ -860,6 +1050,7 @@ export function TemplateGallery() {
                               placeholder="Tech Corp Inc."
                               value={exp.company}
                               onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                              className="min-h-[44px]"
                             />
                           </div>
                           <div className="space-y-2 sm:col-span-2">
@@ -868,6 +1059,7 @@ export function TemplateGallery() {
                               placeholder="Jan 2020 - Present"
                               value={exp.period}
                               onChange={(e) => updateExperience(exp.id, 'period', e.target.value)}
+                              className="min-h-[44px]"
                             />
                           </div>
                           <div className="space-y-2 sm:col-span-2">
@@ -887,10 +1079,10 @@ export function TemplateGallery() {
 
                 {/* Education */}
                 {editorStep === 2 && (
-                  <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-foreground">Education</h3>
-                      <Button variant="outline" size="sm" onClick={addEducation} className="gap-2">
+                      <Button variant="outline" size="sm" onClick={addEducation} className="gap-2 min-h-[44px]">
                         <Plus className="h-4 w-4" />
                         Add Education
                       </Button>
@@ -904,19 +1096,20 @@ export function TemplateGallery() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-destructive hover:text-destructive"
+                            className="text-destructive hover:text-destructive min-h-[44px] min-w-[44px]"
                             onClick={() => removeEducation(edu.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label>Degree</Label>
                             <Input
                               placeholder="Bachelor of Science"
                               value={edu.degree}
                               onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                              className="min-h-[44px]"
                             />
                           </div>
                           <div className="space-y-2">
@@ -925,6 +1118,7 @@ export function TemplateGallery() {
                               placeholder="University Name"
                               value={edu.school}
                               onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
+                              className="min-h-[44px]"
                             />
                           </div>
                           <div className="space-y-2">
@@ -933,6 +1127,7 @@ export function TemplateGallery() {
                               placeholder="2020"
                               value={edu.year}
                               onChange={(e) => updateEducation(edu.id, 'year', e.target.value)}
+                              className="min-h-[44px]"
                             />
                           </div>
                         </div>
@@ -943,7 +1138,7 @@ export function TemplateGallery() {
 
                 {/* Skills */}
                 {editorStep === 3 && (
-                  <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
                     <h3 className="text-lg font-semibold text-foreground">Skills</h3>
                     <div className="flex gap-2">
                       <Input
@@ -951,8 +1146,9 @@ export function TemplateGallery() {
                         value={newSkill}
                         onChange={(e) => setNewSkill(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                        className="min-h-[44px]"
                       />
-                      <Button onClick={addSkill}>Add</Button>
+                      <Button onClick={addSkill} className="min-h-[44px]">Add</Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {currentResume.skills.map((skill) => (
@@ -963,7 +1159,8 @@ export function TemplateGallery() {
                           {skill}
                           <button
                             onClick={() => removeSkill(skill)}
-                            className="ml-1 hover:text-destructive"
+                            className="ml-1 hover:text-destructive p-0.5"
+                            aria-label={`Remove ${skill}`}
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -980,14 +1177,14 @@ export function TemplateGallery() {
 
                 {/* Preview & Download */}
                 {editorStep === 4 && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-foreground">Preview & Download</h3>
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                      <h3 className="text-lg font-semibold text-foreground">Preview &amp; Download</h3>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleDownload('pdf')}
                           disabled={isDownloading}
-                          className="gap-2"
+                          className="gap-2 flex-1 sm:flex-none min-h-[44px]"
                         >
                           {isDownloading && downloadFormat === 'pdf' ? (
                             <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1000,7 +1197,7 @@ export function TemplateGallery() {
                           variant="outline"
                           onClick={() => handleDownload('docx')}
                           disabled={isDownloading}
-                          className="gap-2"
+                          className="gap-2 flex-1 sm:flex-none min-h-[44px]"
                         >
                           {isDownloading && downloadFormat === 'docx' ? (
                             <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1013,9 +1210,10 @@ export function TemplateGallery() {
                     </div>
                     
                     {/* Resume Preview */}
-                    <div className="bg-muted/50 rounded-lg p-6 overflow-auto">
+                    <div className="bg-muted/50 rounded-lg p-3 sm:p-6 overflow-auto">
                       <div 
-                        className="max-w-2xl mx-auto rounded-lg shadow-xl p-8"
+                        ref={previewRef}
+                        className="max-w-2xl mx-auto rounded-lg shadow-xl p-5 sm:p-8"
                         style={{ backgroundColor: selectedTemplate.colors.background }}
                       >
                         <div 
@@ -1023,7 +1221,7 @@ export function TemplateGallery() {
                           style={{ borderColor: selectedTemplate.colors.accent }}
                         >
                           <h1 
-                            className="text-2xl font-bold mb-1"
+                            className="text-xl sm:text-2xl font-bold mb-1"
                             style={{ color: selectedTemplate.colors.primary }}
                           >
                             {currentResume.name || 'Your Name'}
@@ -1060,7 +1258,7 @@ export function TemplateGallery() {
                             </h2>
                             {currentResume.experience.filter(e => e.company || e.title).map((exp) => (
                               <div key={exp.id} className="mb-4">
-                                <div className="flex justify-between">
+                                <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                                   <span className="font-semibold" style={{ color: selectedTemplate.colors.primary }}>
                                     {exp.title || 'Job Title'}
                                   </span>
@@ -1133,12 +1331,12 @@ export function TemplateGallery() {
               </div>
 
               {/* Step Navigation Buttons */}
-              <div className="flex items-center justify-between mt-6">
+              <div className="flex items-center justify-between mt-4 sm:mt-6">
                 <Button
                   variant="outline"
                   onClick={() => setEditorStep(Math.max(0, editorStep - 1))}
                   disabled={editorStep === 0}
-                  className="gap-2"
+                  className="gap-2 min-h-[44px]"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -1146,7 +1344,7 @@ export function TemplateGallery() {
                 <Button
                   onClick={() => setEditorStep(Math.min(editorSteps.length - 1, editorStep + 1))}
                   disabled={editorStep === editorSteps.length - 1}
-                  className="gap-2"
+                  className="gap-2 min-h-[44px]"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
