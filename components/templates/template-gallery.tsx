@@ -481,10 +481,11 @@ export function TemplateGallery() {
     setIsDownloading(true)
     setDownloadFormat(format)
     const mobilePreparingHtml = '<!doctype html><html><head><title>Preparing Resume PDF...</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Preparing your resume...</body></html>'
+    const mobileErrorHtml = '<!doctype html><html><head><title>Resume PDF Error</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Unable to load your resume. Please go back and try again.</body></html>'
 
     let mobilePdfTab: Window | null = null
     if (format === 'pdf' && isMobile) {
-      mobilePdfTab = window.open('', '_blank', 'noopener,noreferrer')
+      mobilePdfTab = window.open('', '_blank')
       if (!mobilePdfTab) {
         window.alert('Popup blocked. Please allow popups in your browser to open the PDF.')
         setIsDownloading(false)
@@ -505,9 +506,17 @@ export function TemplateGallery() {
       // On mobile, tab is opened synchronously to avoid popup blockers.
       if (isMobile) {
         if (mobilePdfTab && !mobilePdfTab.closed) {
-          mobilePdfTab.document.open()
-          mobilePdfTab.document.write(htmlContent)
-          mobilePdfTab.document.close()
+          try {
+            const mobileHtmlBlob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+            const mobileHtmlUrl = URL.createObjectURL(mobileHtmlBlob)
+            mobilePdfTab.location.href = mobileHtmlUrl
+            setTimeout(() => URL.revokeObjectURL(mobileHtmlUrl), 60000)
+          } catch {
+            mobilePdfTab.document.open()
+            mobilePdfTab.document.write(mobileErrorHtml)
+            mobilePdfTab.document.close()
+            window.alert('Unable to generate resume preview for PDF. Please try again.')
+          }
         }
       } else {
         // Desktop behavior unchanged: open print dialog.
