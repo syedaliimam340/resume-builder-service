@@ -10,6 +10,7 @@ import {
   FileText, FileIcon, Edit3, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Template {
   id: string
@@ -129,9 +130,9 @@ const defaultResumeData: Omit<ResumeData, 'id' | 'createdAt' | 'updatedAt'> = {
 const STORAGE_KEY = 'kangaroo-developers-resumes'
 
 export function TemplateGallery() {
+  const isMobile = useIsMobile()
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [savedResumes, setSavedResumes] = useState<ResumeData[]>([])
   const [currentResume, setCurrentResume] = useState<ResumeData | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -361,7 +362,8 @@ export function TemplateGallery() {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; ${printAdjust} }
     html, body { ${printAdjust} }
-    @media print { body { padding: 20px; background: #ffffff; } }
+    @page { size: A4 portrait; margin: 1cm; }
+    @media print { body { padding: 0; max-width: 100%; margin: 0; ${printAdjust} } }
   </style>
 </head>
  <body style="${atsBodyStyle}">
@@ -404,7 +406,8 @@ export function TemplateGallery() {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; ${printAdjust} }
     html, body { ${printAdjust} }
-    @media print { body { padding: 20px; background: ${template.colors.background}; } }
+    @page { size: A4 portrait; margin: 1cm; }
+    @media print { body { padding: 0; max-width: 100%; margin: 0; background: ${template.colors.background}; ${printAdjust} } }
   </style>
 </head>
  <body style="${bodyStyle}">
@@ -477,19 +480,67 @@ export function TemplateGallery() {
     
     setIsDownloading(true)
     setDownloadFormat(format)
+    const mobilePreparingHtml = '<!doctype html><html><head><title>Preparing Resume PDF...</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Preparing your resume...</body></html>'
+    const mobileErrorHtml = '<!doctype html><html><head><title>Resume PDF Error</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Unable to load your resume. Please go back and try again.</body></html>'
+
+    let mobilePdfTab: Window | null = null
+    if (format === 'pdf' && isMobile) {
+      mobilePdfTab = window.open('', '_blank')
+      if (!mobilePdfTab) {
+        window.alert('Popup blocked. Please allow popups in your browser to open the PDF.')
+        setIsDownloading(false)
+        setDownloadFormat(null)
+        return
+      }
+      mobilePdfTab.document.write(mobilePreparingHtml)
+      mobilePdfTab.document.close()
+    }
     
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    if (!(format === 'pdf' && isMobile)) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
     
     const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
     
     if (format === 'pdf') {
-      // Open in new window for print to PDF
-      const printWindow = window.open('', '_blank')
-      if (printWindow) {
-        printWindow.document.write(htmlContent)
-        printWindow.document.close()
-        printWindow.onload = () => {
-          printWindow.print()
+      // On mobile, tab is opened synchronously to avoid popup blockers.
+      if (isMobile) {
+        if (mobilePdfTab && !mobilePdfTab.closed) {
+          try {
+            const mobileHtmlBlob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+            const mobileHtmlUrl = URL.createObjectURL(mobileHtmlBlob)
+            mobilePdfTab.location.href = mobileHtmlUrl
+            const revokeUrlInterval = window.setInterval(() => {
+              if (!mobilePdfTab || mobilePdfTab.closed) {
+                URL.revokeObjectURL(mobileHtmlUrl)
+                window.clearInterval(revokeUrlInterval)
+              }
+            }, 5000)
+          } catch (error) {
+            console.error('Unable to generate mobile resume preview for PDF download.', error)
+            mobilePdfTab.document.open()
+            mobilePdfTab.document.write(mobileErrorHtml)
+            mobilePdfTab.document.close()
+            window.alert('Unable to generate resume preview for PDF. Please try again.')
+          }
+        }
+      } else {
+        // Desktop behavior unchanged: open print dialog.
+        const printWindow = window.open('', '_blank')
+        if (printWindow) {
+          printWindow.document.write(htmlContent)
+          printWindow.document.close()
+          const doPrint = () => {
+            setTimeout(() => {
+              printWindow.focus()
+              printWindow.print()
+            }, 500)
+          }
+          if (printWindow.document.readyState === 'complete') {
+            doPrint()
+          } else {
+            printWindow.onload = doPrint
+          }
         }
       }
     } else {
@@ -697,8 +748,8 @@ export function TemplateGallery() {
           <div className="min-h-screen py-8 px-4">
             <div className="max-w-5xl mx-auto">
               {/* Editor Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+                <div className="flex items-center gap-3">
                   <Button 
                     variant="ghost" 
                     size="icon"
@@ -707,7 +758,7 @@ export function TemplateGallery() {
                     <X className="h-5 w-5" />
                   </Button>
                   <div>
-                    <h2 className="text-xl font-semibold text-foreground">
+                    <h2 className="text-lg sm:text-xl font-semibold text-foreground">
                       {currentResume.name || 'New Resume'}
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -715,9 +766,10 @@ export function TemplateGallery() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 self-end sm:self-auto">
                   <Button 
                     variant="outline" 
+                    size="sm"
                     onClick={saveResume}
                     className="gap-2"
                   >
@@ -726,7 +778,8 @@ export function TemplateGallery() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setIsPreviewOpen(true)}
+                    size="sm"
+                    onClick={() => setEditorStep(4)}
                     className="gap-2"
                   >
                     <Eye className="h-4 w-4" />
@@ -736,13 +789,13 @@ export function TemplateGallery() {
               </div>
 
               {/* Step Navigation */}
-              <div className="flex items-center justify-center gap-2 mb-8">
+              <div className="flex items-center justify-start sm:justify-center gap-1 sm:gap-2 mb-8 overflow-x-auto pb-2">
                 {editorSteps.map((step, idx) => (
                   <button
                     key={step}
                     onClick={() => setEditorStep(idx)}
                     className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                      "px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0",
                       editorStep === idx 
                         ? "bg-primary text-primary-foreground" 
                         : "bg-card text-muted-foreground hover:text-foreground"
@@ -754,7 +807,7 @@ export function TemplateGallery() {
               </div>
 
               {/* Editor Content */}
-              <div className="bg-card border border-border rounded-xl p-6">
+              <div className="bg-card border border-border rounded-xl p-3 sm:p-6">
                 {/* Personal Info */}
                 {editorStep === 0 && (
                   <div className="space-y-6 max-w-2xl mx-auto">
@@ -996,19 +1049,21 @@ export function TemplateGallery() {
                           )}
                           Download PDF
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDownload('docx')}
-                          disabled={isDownloading}
-                          className="gap-2"
-                        >
-                          {isDownloading && downloadFormat === 'docx' ? (
-                            <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <FileIcon className="h-4 w-4" />
-                          )}
-                          Download Word
-                        </Button>
+                        {!isMobile && (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleDownload('docx')}
+                            disabled={isDownloading}
+                            className="gap-2"
+                          >
+                            {isDownloading && downloadFormat === 'docx' ? (
+                              <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <FileIcon className="h-4 w-4" />
+                            )}
+                            Download Word
+                          </Button>
+                        )}
                       </div>
                     </div>
                     
