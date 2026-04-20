@@ -24,8 +24,11 @@ export function ExportSection() {
     setIsExporting(true)
     try {
       if (format === 'pdf') {
-        exportToPDF(resume, customizations)
-        // PDF export opens a print dialog; just wait briefly
+        const opened = exportToPDF(resume, customizations)
+        if (!opened) {
+          alert('PDF export was blocked by your browser. Please allow pop-ups for this site and try again.')
+        }
+        // Wait briefly for the print dialog
         await new Promise(resolve => setTimeout(resolve, 500))
       } else if (format === 'json') {
         const blob = new Blob([JSON.stringify(resume, null, 2)], { type: 'application/json' })

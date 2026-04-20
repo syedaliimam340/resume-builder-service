@@ -325,22 +325,23 @@ export const useResumeStore = create<ResumeStore>()(
           try {
             const value = localStorage.getItem(name)
             return value ? JSON.parse(value) : null
-          } catch {
+          } catch (err) {
+            console.warn('Failed to read resume data from localStorage:', err)
             return null
           }
         },
         setItem: (name, value) => {
           try {
             localStorage.setItem(name, JSON.stringify(value))
-          } catch {
-            // Ignore storage quota errors
+          } catch (err) {
+            console.warn('Failed to save resume data to localStorage:', err)
           }
         },
         removeItem: (name) => {
           try {
             localStorage.removeItem(name)
-          } catch {
-            // Ignore errors
+          } catch (err) {
+            console.warn('Failed to remove resume data from localStorage:', err)
           }
         },
       },

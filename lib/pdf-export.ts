@@ -152,10 +152,13 @@ function generateResumeHTML(resume: ResumeContent, customizations: ResumeCustomi
 </html>`
 }
 
-export function exportToPDF(resume: ResumeContent, customizations: ResumeCustomizations): void {
+export function exportToPDF(resume: ResumeContent, customizations: ResumeCustomizations): boolean {
   const html = generateResumeHTML(resume, customizations)
   const printWindow = window.open('', '_blank', 'width=900,height=700')
-  if (!printWindow) return
+  if (!printWindow) {
+    // Popup was blocked — return false so the caller can notify the user
+    return false
+  }
 
   printWindow.document.write(html)
   printWindow.document.close()
@@ -165,7 +168,9 @@ export function exportToPDF(resume: ResumeContent, customizations: ResumeCustomi
     setTimeout(() => {
       printWindow.focus()
       printWindow.print()
-      printWindow.close()
+      // Do not auto-close so the user can review/adjust print settings
     }, 300)
   })
+
+  return true
 }
