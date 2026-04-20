@@ -510,7 +510,6 @@ export function TemplateGallery() {
             const mobileHtmlBlob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
             const mobileHtmlUrl = URL.createObjectURL(mobileHtmlBlob)
             mobilePdfTab.location.href = mobileHtmlUrl
-            setTimeout(() => URL.revokeObjectURL(mobileHtmlUrl), 60000)
           } catch {
             mobilePdfTab.document.open()
             mobilePdfTab.document.write(mobileErrorHtml)
