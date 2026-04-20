@@ -510,7 +510,14 @@ export function TemplateGallery() {
             const mobileHtmlBlob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
             const mobileHtmlUrl = URL.createObjectURL(mobileHtmlBlob)
             mobilePdfTab.location.href = mobileHtmlUrl
+            const revokeUrlInterval = window.setInterval(() => {
+              if (!mobilePdfTab || mobilePdfTab.closed) {
+                URL.revokeObjectURL(mobileHtmlUrl)
+                window.clearInterval(revokeUrlInterval)
+              }
+            }, 3000)
           } catch {
+            console.error('Unable to generate mobile resume preview for PDF download.')
             mobilePdfTab.document.open()
             mobilePdfTab.document.write(mobileErrorHtml)
             mobilePdfTab.document.close()
