@@ -515,9 +515,9 @@ export function TemplateGallery() {
                 URL.revokeObjectURL(mobileHtmlUrl)
                 window.clearInterval(revokeUrlInterval)
               }
-            }, 3000)
-          } catch {
-            console.error('Unable to generate mobile resume preview for PDF download.')
+            }, 5000)
+          } catch (error) {
+            console.error('Unable to generate mobile resume preview for PDF download.', error)
             mobilePdfTab.document.open()
             mobilePdfTab.document.write(mobileErrorHtml)
             mobilePdfTab.document.close()
