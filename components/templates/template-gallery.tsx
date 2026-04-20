@@ -480,6 +480,7 @@ export function TemplateGallery() {
     
     setIsDownloading(true)
     setDownloadFormat(format)
+    const mobilePreparingHtml = '<!doctype html><html><head><title>Preparing Resume PDF...</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Preparing your resume...</body></html>'
 
     let mobilePdfTab: Window | null = null
     if (format === 'pdf' && isMobile) {
@@ -490,11 +491,13 @@ export function TemplateGallery() {
         setDownloadFormat(null)
         return
       }
-      mobilePdfTab.document.write('<!doctype html><html><head><title>Preparing Resume PDF...</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Preparing your resume...</body></html>')
+      mobilePdfTab.document.write(mobilePreparingHtml)
       mobilePdfTab.document.close()
     }
     
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    if (!(format === 'pdf' && isMobile)) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
     
     const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
     
