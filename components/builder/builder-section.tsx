@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useResumeStore } from '@/lib/store'
+import { useResumePersistence } from '@/hooks/use-resume-persistence'
 import { StepNavigation } from './step-navigation'
 import { PersonalInfoForm } from './forms/personal-info-form'
 import { ExperienceForm } from './forms/experience-form'
@@ -16,6 +17,9 @@ import { Eye, EyeOff, ArrowRight } from 'lucide-react'
 export function BuilderSection() {
   const { currentStep } = useResumeStore()
   const [showPreview, setShowPreview] = useState(false)
+
+  // Initialize persistence validation
+  useResumePersistence()
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -39,54 +43,54 @@ export function BuilderSection() {
   }
 
   return (
-    <section id="builder" className="py-24 min-h-screen relative">
+    <section id="builder" className="py-16 sm:py-24 min-h-screen relative">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-card/30 to-background" />
 
       <div className="container relative z-10 px-4 md:px-6">
         {/* Section header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
             Build Your Resume
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground">
             Fill in your details, choose a template, and watch your resume come to life.
           </p>
         </div>
 
         {/* Step navigation */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <StepNavigation />
         </div>
 
         {/* Main builder area */}
-        <div className="grid lg:grid-cols-5 gap-8">
+        <div className="grid lg:grid-cols-5 gap-6 sm:gap-8">
           {/* Left side - Form */}
           <div className="lg:col-span-2">
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
               {renderStepContent()}
             </div>
 
             {/* Template selector (shown on smaller screens) */}
-            <div className="mt-6 lg:hidden">
+            <div className="mt-4 sm:mt-6 lg:hidden">
               <TemplateSelector />
             </div>
 
             {/* Mobile preview toggle */}
-            <div className="lg:hidden mt-6">
+            <div className="lg:hidden mt-4 sm:mt-6">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full min-h-[44px] gap-2"
                 onClick={() => setShowPreview(!showPreview)}
               >
                 {showPreview ? (
                   <>
-                    <EyeOff className="h-4 w-4 mr-2" />
+                    <EyeOff className="h-4 w-4" />
                     Hide Preview
                   </>
                 ) : (
                   <>
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Eye className="h-4 w-4" />
                     Show Preview
                   </>
                 )}
@@ -95,10 +99,22 @@ export function BuilderSection() {
 
             {/* Mobile preview panel */}
             {showPreview && (
-              <div className="lg:hidden mt-6">
+              <div className="lg:hidden mt-4 sm:mt-6">
                 <ResumePreview />
               </div>
             )}
+
+            {/* Mobile continue button */}
+            <div className="lg:hidden mt-4 sm:mt-6">
+              <Button
+                size="lg"
+                className="w-full gap-2 group min-h-[44px]"
+                onClick={scrollToExport}
+              >
+                Continue to Export
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
           </div>
 
           {/* Right side - Preview & Templates */}

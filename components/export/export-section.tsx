@@ -5,6 +5,7 @@ import { useResumeStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { FullPreview } from './full-preview'
 import { ExportOptions } from './export-options'
+import { exportToPDF } from '@/lib/pdf-export'
 import { 
   Download, 
   Share2, 
@@ -15,18 +16,68 @@ import {
 } from 'lucide-react'
 
 export function ExportSection() {
-  const { resume, isDirty, markSaved } = useResumeStore()
+  const { resume, customizations, isDirty, markSaved } = useResumeStore()
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
 
   const handleExport = async (format: string) => {
     setIsExporting(true)
-    // Simulate export - in production this would call an API
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsExporting(false)
-    setExportSuccess(true)
-    markSaved()
-    setTimeout(() => setExportSuccess(false), 3000)
+    try {
+      if (format === 'pdf') {
+        exportToPDF(resume, customizations)
+        // PDF export opens a print dialog; just wait briefly
+        await new Promise(resolve => setTimeout(resolve, 500))
+      } else if (format === 'json') {
+        const blob = new Blob([JSON.stringify(resume, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${resume.personalInfo.fullName || 'resume'}.json`
+        a.click()
+        URL.revokeObjectURL(url)
+      } else if (format === 'txt') {
+        const lines: string[] = []
+        const pi = resume.personalInfo
+        if (pi.fullName) lines.push(pi.fullName)
+        if (pi.title) lines.push(pi.title)
+        const contact = [pi.email, pi.phone, pi.location].filter(Boolean).join(' | ')
+        if (contact) lines.push(contact)
+        if (pi.links.length) lines.push(pi.links.map(l => l.url).join(' | '))
+        if (resume.summary) { lines.push('', 'PROFESSIONAL SUMMARY', resume.summary) }
+        if (resume.experience.length) {
+          lines.push('', 'EXPERIENCE')
+          resume.experience.forEach(exp => {
+            lines.push(`${exp.title} at ${exp.company}`)
+            exp.bullets.filter(b => b.trim()).forEach(b => lines.push(`• ${b}`))
+          })
+        }
+        if (resume.education.length) {
+          lines.push('', 'EDUCATION')
+          resume.education.forEach(edu => {
+            lines.push(`${edu.degree}${edu.field ? ` in ${edu.field}` : ''} – ${edu.institution}`)
+          })
+        }
+        if (resume.skills.length) {
+          lines.push('', 'SKILLS')
+          resume.skills.forEach(cat => lines.push(`${cat.category}: ${cat.items.map(s => s.name).join(', ')}`))
+        }
+        const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${resume.personalInfo.fullName || 'resume'}.txt`
+        a.click()
+        URL.revokeObjectURL(url)
+      } else {
+        // Simulate other formats (docx, png)
+        await new Promise(resolve => setTimeout(resolve, 1500))
+      }
+      setExportSuccess(true)
+      markSaved()
+      setTimeout(() => setExportSuccess(false), 3000)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   const scrollToBuilder = () => {

@@ -293,6 +293,57 @@ export const useResumeStore = create<ResumeStore>()(
         customizations: state.customizations,
         selectedTemplateId: state.selectedTemplateId,
       }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.warn('Failed to rehydrate resume store from localStorage:', error)
+          return
+        }
+        if (state) {
+          // Validate and repair resume data after hydration
+          const resume = state.resume
+          if (!resume.personalInfo) {
+            state.resume = { ...defaultResumeContent }
+            return
+          }
+          // Ensure all array fields exist
+          if (!Array.isArray(resume.experience)) state.resume.experience = []
+          if (!Array.isArray(resume.education)) state.resume.education = []
+          if (!Array.isArray(resume.skills)) state.resume.skills = []
+          if (!Array.isArray(resume.certifications)) state.resume.certifications = []
+          if (!Array.isArray(resume.languages)) state.resume.languages = []
+          if (!Array.isArray(resume.projects)) state.resume.projects = []
+          if (!Array.isArray(resume.sectionOrder)) {
+            state.resume.sectionOrder = defaultResumeContent.sectionOrder
+          }
+          if (!Array.isArray(resume.personalInfo.links)) {
+            state.resume.personalInfo.links = []
+          }
+        }
+      },
+      storage: {
+        getItem: (name) => {
+          try {
+            const value = localStorage.getItem(name)
+            return value ? JSON.parse(value) : null
+          } catch {
+            return null
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, JSON.stringify(value))
+          } catch {
+            // Ignore storage quota errors
+          }
+        },
+        removeItem: (name) => {
+          try {
+            localStorage.removeItem(name)
+          } catch {
+            // Ignore errors
+          }
+        },
+      },
     }
   )
 )

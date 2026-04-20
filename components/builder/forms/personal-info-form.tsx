@@ -30,7 +30,7 @@ export function PersonalInfoForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-1">Personal Information</h3>
         <p className="text-sm text-muted-foreground">Tell us about yourself</p>
@@ -45,6 +45,7 @@ export function PersonalInfoForm() {
             placeholder="John Doe"
             value={personalInfo.fullName}
             onChange={(e) => updatePersonalInfo({ fullName: e.target.value })}
+            className="min-h-[44px]"
           />
         </div>
 
@@ -56,6 +57,7 @@ export function PersonalInfoForm() {
             placeholder="Senior Software Engineer"
             value={personalInfo.title}
             onChange={(e) => updatePersonalInfo({ title: e.target.value })}
+            className="min-h-[44px]"
           />
         </div>
 
@@ -69,6 +71,7 @@ export function PersonalInfoForm() {
               placeholder="john@example.com"
               value={personalInfo.email}
               onChange={(e) => updatePersonalInfo({ email: e.target.value })}
+              className="min-h-[44px]"
             />
           </div>
           <div className="space-y-2">
@@ -79,6 +82,7 @@ export function PersonalInfoForm() {
               placeholder="+1 (555) 123-4567"
               value={personalInfo.phone}
               onChange={(e) => updatePersonalInfo({ phone: e.target.value })}
+              className="min-h-[44px]"
             />
           </div>
         </div>
@@ -91,6 +95,7 @@ export function PersonalInfoForm() {
             placeholder="San Francisco, CA"
             value={personalInfo.location}
             onChange={(e) => updatePersonalInfo({ location: e.target.value })}
+            className="min-h-[44px]"
           />
         </div>
 
@@ -99,14 +104,15 @@ export function PersonalInfoForm() {
           <Label>Links</Label>
           {personalInfo.links.map((link, index) => (
             <div key={index} className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 p-2 bg-muted rounded-md">
-                <LinkIcon className="h-4 w-4 text-muted-foreground" />
+              <div className="flex-1 flex items-center gap-2 p-2 bg-muted rounded-md min-h-[44px]">
+                <LinkIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="text-sm text-foreground truncate">{link.url}</span>
-                <span className="text-xs text-primary uppercase">{link.type}</span>
+                <span className="text-xs text-primary uppercase shrink-0">{link.type}</span>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
+                className="min-w-[44px] min-h-[44px]"
                 onClick={() => handleRemoveLink(index)}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -118,7 +124,7 @@ export function PersonalInfoForm() {
             <select
               value={newLink.type}
               onChange={(e) => setNewLink({ ...newLink, type: e.target.value as typeof newLink.type })}
-              className="w-28 px-3 py-2 text-sm bg-muted border border-border rounded-md text-foreground"
+              className="w-28 px-2 py-2 text-sm bg-muted border border-border rounded-md text-foreground min-h-[44px]"
             >
               <option value="linkedin">LinkedIn</option>
               <option value="github">GitHub</option>
@@ -129,9 +135,9 @@ export function PersonalInfoForm() {
               placeholder="https://..."
               value={newLink.url}
               onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-              className="flex-1"
+              className="flex-1 min-h-[44px]"
             />
-            <Button variant="outline" size="icon" onClick={handleAddLink}>
+            <Button variant="outline" size="icon" className="min-w-[44px] min-h-[44px]" onClick={handleAddLink}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -146,6 +152,7 @@ export function PersonalInfoForm() {
             value={summary}
             onChange={(e) => updateSummary(e.target.value)}
             rows={4}
+            className="resize-none"
           />
           <p className="text-xs text-muted-foreground">
             2-4 sentences highlighting your key qualifications and career objectives.
@@ -155,7 +162,7 @@ export function PersonalInfoForm() {
 
       {/* Next Step */}
       <div className="pt-4 border-t border-border">
-        <Button onClick={nextStep} className="w-full gap-2 group">
+        <Button onClick={nextStep} className="w-full gap-2 group min-h-[44px]">
           Continue to Experience
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Button>

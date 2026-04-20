@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { 
   FileText, 
   FileType, 
@@ -64,6 +65,7 @@ const exportFormats: {
 ]
 
 export function ExportOptions({ onExport, isExporting }: ExportOptionsProps) {
+  const isMobile = useIsMobile()
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('pdf')
   const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null)
 
@@ -73,13 +75,18 @@ export function ExportOptions({ onExport, isExporting }: ExportOptionsProps) {
     setExportingFormat(null)
   }
 
+  // Hide DOCX format on mobile
+  const visibleFormats = exportFormats.filter(
+    (format) => !(isMobile && format.id === 'docx')
+  )
+
   return (
     <div className="bg-card border border-border rounded-xl p-6">
       <h3 className="font-medium text-foreground mb-4">Download Format</h3>
 
       {/* Format options */}
       <div className="space-y-2 mb-6">
-        {exportFormats.map((format) => (
+        {visibleFormats.map((format) => (
           <button
             key={format.id}
             onClick={() => !format.isPro && setSelectedFormat(format.id)}
