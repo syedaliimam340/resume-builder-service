@@ -58,13 +58,11 @@ export async function OPTIONS() {
 
 function hexToRgb(hex: string): [number, number, number] {
   const cleaned = hex.replace('#', '').trim()
+  // Expand 3-char shorthand to 6-char; validate exact 6-char hex
   const normalized =
     cleaned.length === 3
-      ? cleaned
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : cleaned.padStart(6, '0').slice(0, 6)
+      ? cleaned.split('').map((c) => c + c).join('')
+      : cleaned.slice(0, 6)
   // Validate that the string is a valid 6-character hex value
   if (!/^[0-9a-f]{6}$/i.test(normalized)) {
     return [0, 0, 0]
@@ -84,14 +82,14 @@ function wrapText(text: string, maxWidth: number, font: { widthOfTextAtSize: (t:
       current = candidate
     } else {
       if (current) lines.push(current)
-      // If a single word is wider than maxWidth, truncate it with ellipsis
-      if (!current && font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+      current = ''
+      // If the word alone is wider than maxWidth, truncate it with ellipsis
+      if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
         let truncated = word
         while (truncated.length > 1 && font.widthOfTextAtSize(truncated + '...', fontSize) > maxWidth) {
           truncated = truncated.slice(0, -1)
         }
         lines.push(truncated + '...')
-        current = ''
       } else {
         current = word
       }
@@ -284,12 +282,14 @@ export async function POST(request: NextRequest) {
     }
 
     const pdfBytes = await pdfDoc.save()
-    // Sanitize filename: keep only alphanumeric chars and hyphens, limit length
-    const safeName = (resume.name || 'resume')
+    // Sanitize filename: keep only alphanumeric chars and hyphens, trim
+    // leading/trailing dashes, limit length
+    const safeName = (resume.name || '')
       .replace(/[^a-z0-9\s-]/gi, '')
       .trim()
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
       .toLowerCase()
       .slice(0, 64) || 'resume'
     const filename = `${safeName}-resume.pdf`
