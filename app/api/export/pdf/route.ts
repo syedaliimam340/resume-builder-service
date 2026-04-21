@@ -65,6 +65,10 @@ function hexToRgb(hex: string): [number, number, number] {
           .map((c) => c + c)
           .join('')
       : cleaned.padStart(6, '0').slice(0, 6)
+  // Validate that the string is a valid 6-character hex value
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) {
+    return [0, 0, 0]
+  }
   const num = parseInt(normalized, 16)
   return [((num >> 16) & 0xff) / 255, ((num >> 8) & 0xff) / 255, (num & 0xff) / 255]
 }
@@ -80,7 +84,17 @@ function wrapText(text: string, maxWidth: number, font: { widthOfTextAtSize: (t:
       current = candidate
     } else {
       if (current) lines.push(current)
-      current = word
+      // If a single word is wider than maxWidth, truncate it with ellipsis
+      if (!current && font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+        let truncated = word
+        while (truncated.length > 1 && font.widthOfTextAtSize(truncated + '...', fontSize) > maxWidth) {
+          truncated = truncated.slice(0, -1)
+        }
+        lines.push(truncated + '...')
+        current = ''
+      } else {
+        current = word
+      }
     }
   }
   if (current) lines.push(current)
@@ -270,7 +284,15 @@ export async function POST(request: NextRequest) {
     }
 
     const pdfBytes = await pdfDoc.save()
-    const filename = `${(resume.name || 'resume').replace(/[^a-z0-9]/gi, '-').toLowerCase()}-resume.pdf`
+    // Sanitize filename: keep only alphanumeric chars and hyphens, limit length
+    const safeName = (resume.name || 'resume')
+      .replace(/[^a-z0-9\s-]/gi, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .toLowerCase()
+      .slice(0, 64) || 'resume'
+    const filename = `${safeName}-resume.pdf`
 
     return new NextResponse(pdfBytes, {
       status: 200,
