@@ -480,80 +480,46 @@ export function TemplateGallery() {
     
     setIsDownloading(true)
     setDownloadFormat(format)
-    const mobilePreparingHtml = '<!doctype html><html><head><title>Preparing Resume PDF...</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Preparing your resume...</body></html>'
-    const mobileErrorHtml = '<!doctype html><html><head><title>Resume PDF Error</title></head><body style="font-family: system-ui, sans-serif; padding: 24px;">Unable to load your resume. Please go back and try again.</body></html>'
 
-    let mobilePdfTab: Window | null = null
-    if (format === 'pdf' && isMobile) {
-      mobilePdfTab = window.open('', '_blank')
-      if (!mobilePdfTab) {
-        window.alert('Popup blocked. Please allow popups in your browser to open the PDF.')
-        setIsDownloading(false)
-        setDownloadFormat(null)
-        return
-      }
-      mobilePdfTab.document.write(mobilePreparingHtml)
-      mobilePdfTab.document.close()
-    }
-    
-    if (!(format === 'pdf' && isMobile)) {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-    
-    const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
-    
-    if (format === 'pdf') {
-      // On mobile, tab is opened synchronously to avoid popup blockers.
-      if (isMobile) {
-        if (mobilePdfTab && !mobilePdfTab.closed) {
-          try {
-            const mobileHtmlBlob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
-            const mobileHtmlUrl = URL.createObjectURL(mobileHtmlBlob)
-            mobilePdfTab.location.href = mobileHtmlUrl
-            const revokeUrlInterval = window.setInterval(() => {
-              if (!mobilePdfTab || mobilePdfTab.closed) {
-                URL.revokeObjectURL(mobileHtmlUrl)
-                window.clearInterval(revokeUrlInterval)
-              }
-            }, 5000)
-          } catch (error) {
-            console.error('Unable to generate mobile resume preview for PDF download.', error)
-            mobilePdfTab.document.open()
-            mobilePdfTab.document.write(mobileErrorHtml)
-            mobilePdfTab.document.close()
-            window.alert('Unable to generate resume preview for PDF. Please try again.')
-          }
+    try {
+      if (format === 'pdf') {
+        // Use server-side PDF generation so the download works in all contexts
+        // (including LinkedIn embedded views and other restricted environments).
+        const response = await fetch('/api/export/pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resume: currentResume, template: selectedTemplate }),
+        })
+
+        if (!response.ok) {
+          throw new Error(`PDF generation failed: ${response.status}`)
         }
+
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${currentResume.name || 'resume'}-resume.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
       } else {
-        // Desktop behavior unchanged: open print dialog.
-        const printWindow = window.open('', '_blank')
-        if (printWindow) {
-          printWindow.document.write(htmlContent)
-          printWindow.document.close()
-          const doPrint = () => {
-            setTimeout(() => {
-              printWindow.focus()
-              printWindow.print()
-            }, 500)
-          }
-          if (printWindow.document.readyState === 'complete') {
-            doPrint()
-          } else {
-            printWindow.onload = doPrint
-          }
-        }
+        const htmlContent = generateResumeHTML(currentResume, selectedTemplate)
+        const wordContent = addWordNamespaces(htmlContent)
+        const blob = new Blob([wordContent], { type: 'application/msword' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${currentResume.name || 'resume'}-resume.doc`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
       }
-    } else {
-      const wordContent = addWordNamespaces(htmlContent)
-      const blob = new Blob([wordContent], { type: 'application/msword' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${currentResume.name || 'resume'}-resume.doc`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Download failed:', error)
+      window.alert('Unable to generate the download. Please try again.')
     }
     
     setIsDownloading(false)
